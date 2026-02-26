@@ -1,0 +1,35 @@
+name: FinanceApp
+options:
+  bundleIdPrefix: com.sergiofinance
+  deploymentTarget:
+    iOS: "16.0"
+  xcodeVersion: "15.0"
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+
+targets:
+  FinanceApp:
+    type: application
+    platform: iOS
+    sources:
+      - path: FinanceApp
+    settings:
+      base:
+        INFOPLIST_FILE: FinanceApp/Resources/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.sergiofinance.FinanceApp
+        SWIFT_OBJC_BRIDGING_HEADER: "$(PROJECT_DIR)/FinanceApp/FinanceApp-Bridging-Header.h"
+        HEADER_SEARCH_PATHS:
+          - "$(PROJECT_DIR)/libs"
+        LIBRARY_SEARCH_PATHS:
+          - "$(PROJECT_DIR)/libs"
+        OTHER_LDFLAGS:
+          - "-lfinance_ffi"
+          - "-lsqlite3"
+          - "-lresolv"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_STYLE: Automatic
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"

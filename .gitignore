@@ -1,0 +1,22 @@
+# Build artifacts
+.build/
+DerivedData/
+
+# Generated Xcode project
+FinanceApp.xcodeproj
+
+# macOS
+.DS_Store
+*.swp
+*~
+
+# Xcode user data
+*.xcuserdata
+*.xcworkspace
+
+# Dependencies
+Pods/
+.swiftpm/
+
+# VS Code
+.vscode/settings.json

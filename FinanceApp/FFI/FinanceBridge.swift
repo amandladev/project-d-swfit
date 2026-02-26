@@ -1,0 +1,194 @@
+import Foundation
+
+// MARK: - FFI Error Types
+
+enum FFIError: LocalizedError {
+    case nullPointer
+    case invalidUTF8
+    case decodingFailed(String)
+    case backendError(code: Int, message: String)
+
+    var errorDescription: String? {
+        switch self {
+        case .nullPointer:
+            return "FFI returned null pointer"
+        case .invalidUTF8:
+            return "FFI returned invalid UTF-8 string"
+        case .decodingFailed(let detail):
+            return "Failed to decode FFI response: \(detail)"
+        case .backendError(_, let message):
+            return message
+        }
+    }
+}
+
+// MARK: - Finance Bridge
+
+/// Swift wrapper around the Rust FFI C functions.
+/// All C functions return JSON strings that are decoded into Swift types.
+final class FinanceBridge {
+
+    // Shared decoder configured for Rust/serde snake_case JSON keys
+    private static let decoder: JSONDecoder = {
+        let d = JSONDecoder()
+        d.keyDecodingStrategy = .convertFromSnakeCase
+        return d
+    }()
+
+    // MARK: - Private Helpers
+
+    /// Calls an FFI function, decodes the JSON response, and returns the data payload.
+    private static func call<T: Decodable>(_ ptr: UnsafeMutablePointer<CChar>?) throws -> T {
+        guard let ptr = ptr else {
+            throw FFIError.nullPointer
+        }
+        defer { free_string(ptr) }
+
+        let jsonString = String(cString: ptr)
+        guard let jsonData = jsonString.data(using: .utf8) else {
+            throw FFIError.invalidUTF8
+        }
+
+        let response: FFIResponse<T>
+        do {
+            response = try decoder.decode(FFIResponse<T>.self, from: jsonData)
+        } catch {
+            throw FFIError.decodingFailed(error.localizedDescription)
+        }
+
+        guard response.success else {
+            throw FFIError.backendError(code: response.code, message: response.message)
+        }
+
+        guard let data = response.data else {
+            throw FFIError.decodingFailed("Response succeeded but data is nil")
+        }
+
+        return data
+    }
+
+    /// Calls an FFI function that returns no meaningful data payload (e.g. delete, init).
+    private static func callVoid(_ ptr: UnsafeMutablePointer<CChar>?) throws {
+        guard let ptr = ptr else {
+            throw FFIError.nullPointer
+        }
+        defer { free_string(ptr) }
+
+        let jsonString = String(cString: ptr)
+        guard let jsonData = jsonString.data(using: .utf8) else {
+            throw FFIError.invalidUTF8
+        }
+
+        let response: FFIResponse<EmptyData>
+        do {
+            response = try decoder.decode(FFIResponse<EmptyData>.self, from: jsonData)
+        } catch {
+            throw FFIError.decodingFailed(error.localizedDescription)
+        }
+
+        guard response.success else {
+            throw FFIError.backendError(code: response.code, message: response.message)
+        }
+    }
+
+    // MARK: - Database
+
+    /// Initialize the SQLite database at the given file path.
+    static func initDatabase(path: String) throws {
+        try callVoid(init_database(path))
+    }
+
+    // MARK: - Users
+
+    static func createUser(name: String, email: String) throws -> User {
+        try call(create_user(name, email))
+    }
+
+    static func getUser(userId: String) throws -> User {
+        try call(get_user(userId))
+    }
+
+    // MARK: - Accounts
+
+    static func createAccount(userId: String, name: String, currency: String) throws -> Account {
+        try call(create_account(userId, name, currency))
+    }
+
+    static func listAccounts(userId: String) throws -> [Account] {
+        try call(list_accounts(userId))
+    }
+
+    static func deleteAccount(accountId: String) throws {
+        try callVoid(delete_account(accountId))
+    }
+
+    // MARK: - Categories
+
+    static func createCategory(userId: String, name: String, icon: String) throws -> FinanceCategory {
+        try call(create_category(userId, name, icon))
+    }
+
+    static func listCategories(userId: String) throws -> [FinanceCategory] {
+        try call(list_categories(userId))
+    }
+
+    static func deleteCategory(categoryId: String) throws {
+        try callVoid(delete_category(categoryId))
+    }
+
+    // MARK: - Transactions
+
+    static func createTransaction(
+        accountId: String,
+        categoryId: String,
+        amount: Int64,
+        transactionType: String,
+        description: String,
+        date: String
+    ) throws -> FinanceTransaction {
+        try call(
+            create_transaction(accountId, categoryId, amount, transactionType, description, date)
+        )
+    }
+
+    static func editTransaction(
+        transactionId: String,
+        amount: Int64,
+        transactionType: String,
+        description: String,
+        categoryId: String,
+        date: String
+    ) throws -> FinanceTransaction {
+        try call(
+            edit_transaction(transactionId, amount, transactionType, description, categoryId, date)
+        )
+    }
+
+    static func deleteTransaction(transactionId: String) throws {
+        try callVoid(delete_transaction(transactionId))
+    }
+
+    static func listTransactions(accountId: String) throws -> [FinanceTransaction] {
+        try call(list_transactions(accountId))
+    }
+
+    static func listTransactionsByDateRange(
+        accountId: String,
+        from: String,
+        to: String
+    ) throws -> [FinanceTransaction] {
+        try call(list_transactions_by_date_range(accountId, from, to))
+    }
+
+    // MARK: - Balance
+
+    static func getBalance(accountId: String) throws -> Balance {
+        try call(get_balance(accountId))
+    }
+
+    // MARK: - Sync
+
+    static func getPendingSync() throws -> [FinanceTransaction] {
+        try call(get_pending_sync())
+    }
+}
