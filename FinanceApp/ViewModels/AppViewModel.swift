@@ -1,8 +1,10 @@
 import Foundation
 import SwiftUI
+import WidgetKit
 
 // Key stored outside the actor so Task.detached can access it
 private let kUserIdKey = "finance_current_user_id"
+private let kAppGroupId = "group.com.sergiofinance.FinanceApp"
 
 /// Root view model: initializes the database and manages the current user session.
 @MainActor
@@ -20,6 +22,7 @@ class AppViewModel: ObservableObject {
 
         let dbPath = Self.databasePath()
         let savedUserId = UserDefaults.standard.string(forKey: kUserIdKey)
+            ?? UserDefaults(suiteName: kAppGroupId)?.string(forKey: kUserIdKey)
 
         Task.detached {
             do {
@@ -39,6 +42,7 @@ class AppViewModel: ObservableObject {
                         // Saved user not found — clear and show onboarding
                         await MainActor.run {
                             UserDefaults.standard.removeObject(forKey: kUserIdKey)
+                            UserDefaults(suiteName: kAppGroupId)?.removeObject(forKey: kUserIdKey)
                         }
                     }
                 }
@@ -70,9 +74,12 @@ class AppViewModel: ObservableObject {
                 DefaultCategories.seedIfNeeded(userId: user.id)
                 await MainActor.run {
                     UserDefaults.standard.set(user.id, forKey: kUserIdKey)
+                    UserDefaults(suiteName: kAppGroupId)?.set(user.id, forKey: kUserIdKey)
                     self.currentUser = user
                     self.needsOnboarding = false
                     self.isLoading = false
+                    // Refresh widgets with new data
+                    WidgetCenter.shared.reloadAllTimelines()
                 }
             } catch {
                 await MainActor.run {
@@ -86,6 +93,13 @@ class AppViewModel: ObservableObject {
     // MARK: - Helpers
 
     nonisolated static func databasePath() -> String {
+        // Use App Group container so widget extension can access the same database
+        if let groupURL = FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: "group.com.sergiofinance.FinanceApp"
+        ) {
+            return groupURL.appendingPathComponent("finance.db").path
+        }
+        // Fallback to documents directory
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         return docs.appendingPathComponent("finance.db").path
     }

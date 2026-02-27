@@ -12,7 +12,7 @@ struct CategoriesListView: View {
         NavigationStack {
             Group {
                 if viewModel.isLoading && viewModel.categories.isEmpty {
-                    ProgressView()
+                    BrandedLoadingView()
                 } else if viewModel.categories.isEmpty {
                     EmptyStateView(
                         icon: "tag",
@@ -59,18 +59,18 @@ struct CategoriesListView: View {
                 HStack(spacing: 14) {
                     ZStack {
                         Circle()
-                            .fill(Color.accentColor.opacity(0.12))
-                            .frame(width: 40, height: 40)
+                            .fill(AppTheme.accent.opacity(0.10))
+                            .frame(width: 42, height: 42)
                         Text(category.icon)
                             .font(.title3)
                     }
 
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: 3) {
                         Text(category.name)
-                            .font(.body.weight(.medium))
+                            .font(.system(.body, design: .rounded).weight(.medium))
                         if let created = category.createdAt {
                             Text("Added \(DateUtils.relativeString(created))")
-                                .font(.caption)
+                                .font(.system(.caption, design: .rounded))
                                 .foregroundColor(.secondary)
                         }
                     }
@@ -78,10 +78,12 @@ struct CategoriesListView: View {
                     Spacer()
                 }
                 .padding(.vertical, 4)
-            }
-            .onDelete { indexSet in
-                for index in indexSet {
-                    viewModel.deleteCategory(categoryId: viewModel.categories[index].id)
+                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                    Button(role: .destructive) {
+                        viewModel.deleteCategory(categoryId: category.id)
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
                 }
             }
         }

@@ -1,4 +1,5 @@
 import Foundation
+import WidgetKit
 
 @MainActor
 class TransactionsViewModel: ObservableObject {
@@ -62,6 +63,7 @@ class TransactionsViewModel: ObservableObject {
                 )
                 await MainActor.run {
                     self.loadTransactions()
+                    WidgetCenter.shared.reloadAllTimelines()
                 }
             } catch {
                 await MainActor.run {

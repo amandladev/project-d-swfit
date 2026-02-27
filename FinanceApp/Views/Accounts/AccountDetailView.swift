@@ -1,5 +1,14 @@
 import SwiftUI
 
+// MARK: - Date Range Filter Enum
+
+enum DateRangeFilter: String, CaseIterable {
+    case all = "All"
+    case week = "Week"
+    case month = "Month"
+    case custom = "Custom"
+}
+
 struct AccountDetailView: View {
     let account: Account
     let userId: String
@@ -7,6 +16,12 @@ struct AccountDetailView: View {
     @StateObject private var transactionsVM: TransactionsViewModel
     @StateObject private var categoriesVM: CategoriesViewModel
     @State private var showAddTransaction = false
+    @State private var editingTransaction: FinanceTransaction?
+    @State private var searchText = ""
+    @State private var dateFilter: DateRangeFilter = .all
+    @State private var customFrom: Date = Calendar.current.date(byAdding: .month, value: -1, to: Date())!
+    @State private var customTo: Date = Date()
+    @State private var showCustomDatePicker = false
 
     init(account: Account, userId: String) {
         self.account = account
@@ -19,24 +34,28 @@ struct AccountDetailView: View {
         List {
             // Balance card
             Section {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 10) {
                     Text("Current Balance")
-                        .font(.subheadline)
+                        .font(AppTheme.subheadlineFont)
                         .foregroundColor(.secondary)
-                    CurrencyText(cents: transactionsVM.balance, currency: account.currency)
-                        .font(.system(size: 34, weight: .bold))
+                    AnimatedCurrencyText(
+                        cents: transactionsVM.balance,
+                        currency: account.currency,
+                        font: AppTheme.displayFont(34),
+                        color: .primary
+                    )
                     HStack(spacing: 16) {
                         StatBadge(
                             label: "Income",
                             value: totalIncome,
                             currency: account.currency,
-                            color: .green
+                            color: AppTheme.income
                         )
                         StatBadge(
                             label: "Expenses",
                             value: totalExpenses,
                             currency: account.currency,
-                            color: .red
+                            color: AppTheme.expense
                         )
                     }
                     .padding(.top, 4)
@@ -44,19 +63,75 @@ struct AccountDetailView: View {
                 .padding(.vertical, 8)
             }
 
+            // Date range filter
+            Section {
+                VStack(alignment: .leading, spacing: 8) {
+                    Picker("Period", selection: $dateFilter) {
+                        ForEach(DateRangeFilter.allCases, id: \.self) { filter in
+                            Text(filter.rawValue).tag(filter)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .onChange(of: dateFilter) { newValue in
+                        applyDateFilter(newValue)
+                    }
+
+                    if dateFilter == .custom {
+                        HStack {
+                            DatePicker("From", selection: $customFrom, displayedComponents: .date)
+                                .labelsHidden()
+                            Text("to")
+                                .foregroundColor(.secondary)
+                            DatePicker("To", selection: $customTo, displayedComponents: .date)
+                                .labelsHidden()
+                            Button("Apply") {
+                                transactionsVM.loadTransactions(from: customFrom, to: customTo)
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                        }
+                    }
+                }
+            }
+
+            // Quick Actions - Recurring & Budgets
+            Section("Manage") {
+                NavigationLink {
+                    RecurringTransactionsListView(
+                        accountId: account.id,
+                        accountName: account.name,
+                        currency: account.currency,
+                        categoriesVM: categoriesVM
+                    )
+                } label: {
+                    Label("Recurring Transactions", systemImage: "arrow.triangle.2.circlepath")
+                }
+
+                NavigationLink {
+                    BudgetsListView(
+                        accountId: account.id,
+                        accountName: account.name,
+                        currency: account.currency,
+                        categoriesVM: categoriesVM
+                    )
+                } label: {
+                    Label("Budgets", systemImage: "chart.bar.doc.horizontal")
+                }
+            }
+
             // Transactions
             Section {
                 if transactionsVM.isLoading && transactionsVM.transactions.isEmpty {
                     ProgressView()
                         .frame(maxWidth: .infinity, alignment: .center)
-                } else if transactionsVM.transactions.isEmpty {
+                } else if filteredTransactions.isEmpty {
                     HStack {
                         Spacer()
                         VStack(spacing: 8) {
-                            Image(systemName: "tray")
+                            Image(systemName: searchText.isEmpty ? "tray" : "magnifyingglass")
                                 .font(.title2)
                                 .foregroundColor(.secondary)
-                            Text("No transactions yet")
+                            Text(searchText.isEmpty ? "No transactions yet" : "No matches found")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                         }
@@ -64,18 +139,30 @@ struct AccountDetailView: View {
                         Spacer()
                     }
                 } else {
-                    ForEach(transactionsVM.transactions) { transaction in
+                    ForEach(filteredTransactions) { transaction in
                         TransactionRowView(
                             transaction: transaction,
                             categories: categoriesVM.categories,
                             currency: account.currency
                         )
-                    }
-                    .onDelete { indexSet in
-                        for index in indexSet {
-                            transactionsVM.deleteTransaction(
-                                transactionId: transactionsVM.transactions[index].id
-                            )
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            editingTransaction = transaction
+                        }
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                            Button(role: .destructive) {
+                                transactionsVM.deleteTransaction(transactionId: transaction.id)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
+                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                            Button {
+                                editingTransaction = transaction
+                            } label: {
+                                Label("Edit", systemImage: "pencil")
+                            }
+                            .tint(AppTheme.accent)
                         }
                     }
                 }
@@ -83,11 +170,12 @@ struct AccountDetailView: View {
                 HStack {
                     Text("Transactions")
                     Spacer()
-                    Text("\(transactionsVM.transactions.count)")
+                    Text("\(filteredTransactions.count)")
                         .foregroundColor(.secondary)
                 }
             }
         }
+        .searchable(text: $searchText, prompt: "Search by description, category, or amount")
         .navigationTitle(account.name)
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
@@ -106,12 +194,25 @@ struct AccountDetailView: View {
                 currency: account.currency
             )
         }
+        .sheet(item: $editingTransaction) { transaction in
+            EditTransactionView(
+                transactionsVM: transactionsVM,
+                categoriesVM: categoriesVM,
+                transaction: transaction,
+                currency: account.currency
+            )
+        }
         .onAppear {
             transactionsVM.loadTransactions()
             categoriesVM.loadCategories()
         }
         .refreshable {
-            transactionsVM.loadTransactions()
+            applyDateFilter(dateFilter)
+        }
+        .overlay {
+            if transactionsVM.isLoading && transactionsVM.transactions.isEmpty {
+                BrandedLoadingView()
+            }
         }
         .alert("Error", isPresented: Binding<Bool>(
             get: { transactionsVM.error != nil },
@@ -123,16 +224,53 @@ struct AccountDetailView: View {
         }
     }
 
+    // MARK: - Filtering
+
+    private var filteredTransactions: [FinanceTransaction] {
+        guard !searchText.isEmpty else { return transactionsVM.transactions }
+        let query = searchText.lowercased()
+        return transactionsVM.transactions.filter { txn in
+            // Match description
+            if txn.description.lowercased().contains(query) { return true }
+            // Match category name
+            if let cat = categoriesVM.categories.first(where: { $0.id == txn.categoryId }),
+               cat.name.lowercased().contains(query) { return true }
+            // Match amount (e.g. "10.50")
+            let amountStr = String(format: "%.2f", CurrencyFormatter.toDecimal(cents: txn.amount))
+            if amountStr.contains(query) { return true }
+            // Match transaction type
+            if txn.transactionType.lowercased().contains(query) { return true }
+            return false
+        }
+    }
+
+    private func applyDateFilter(_ filter: DateRangeFilter) {
+        let calendar = Calendar.current
+        let now = Date()
+        switch filter {
+        case .all:
+            transactionsVM.loadTransactions()
+        case .week:
+            let from = calendar.date(byAdding: .day, value: -7, to: now)!
+            transactionsVM.loadTransactions(from: from, to: now)
+        case .month:
+            let from = calendar.date(byAdding: .month, value: -1, to: now)!
+            transactionsVM.loadTransactions(from: from, to: now)
+        case .custom:
+            transactionsVM.loadTransactions(from: customFrom, to: customTo)
+        }
+    }
+
     // MARK: - Computed
 
     private var totalIncome: Int64 {
-        transactionsVM.transactions
+        filteredTransactions
             .filter { $0.transactionType == TransactionType.income.rawValue }
             .reduce(0) { $0 + $1.amount }
     }
 
     private var totalExpenses: Int64 {
-        transactionsVM.transactions
+        filteredTransactions
             .filter { $0.transactionType == TransactionType.expense.rawValue }
             .reduce(0) { $0 + $1.amount }
     }
@@ -147,12 +285,17 @@ private struct StatBadge: View {
     let color: Color
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(label)
-                .font(.caption)
-                .foregroundColor(.secondary)
+        VStack(alignment: .leading, spacing: 3) {
+            HStack(spacing: 4) {
+                Circle()
+                    .fill(color)
+                    .frame(width: 6, height: 6)
+                Text(label)
+                    .font(AppTheme.captionFont)
+                    .foregroundColor(.secondary)
+            }
             Text(CurrencyFormatter.format(cents: value, currency: currency))
-                .font(.subheadline.weight(.medium))
+                .font(.system(.subheadline, design: .rounded).weight(.semibold))
                 .foregroundColor(color)
         }
     }
@@ -177,43 +320,55 @@ struct TransactionRowView: View {
         transaction.transactionType == TransactionType.income.rawValue
     }
 
+    private var typeColor: Color {
+        isExpense ? AppTheme.expense : (isIncome ? AppTheme.income : AppTheme.transfer)
+    }
+
     var body: some View {
         HStack(spacing: 12) {
             // Category icon
-            Text(category?.icon ?? "💰")
-                .font(.title2)
-                .frame(width: 36)
+            ZStack {
+                Circle()
+                    .fill(typeColor.opacity(0.12))
+                    .frame(width: 42, height: 42)
+                Text(category?.icon ?? "💰")
+                    .font(.title3)
+            }
 
             // Details
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(transaction.description)
-                    .font(.subheadline.weight(.medium))
+                    .font(.system(.subheadline, design: .rounded).weight(.medium))
                     .lineLimit(1)
                 HStack(spacing: 4) {
                     Text(category?.name ?? "Uncategorized")
                     Text("·")
                     Text(DateUtils.dateOnlyString(transaction.date))
                 }
-                .font(.caption)
+                .font(.system(.caption, design: .rounded))
                 .foregroundColor(.secondary)
             }
 
             Spacer()
 
             // Amount
-            VStack(alignment: .trailing, spacing: 2) {
+            VStack(alignment: .trailing, spacing: 3) {
                 Text(CurrencyFormatter.format(
                     cents: isExpense ? -transaction.amount : transaction.amount,
                     currency: currency
                 ))
-                .font(.subheadline.weight(.semibold))
-                .foregroundColor(isExpense ? .red : (isIncome ? .green : .blue))
+                .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                .foregroundColor(typeColor)
 
                 Text(transaction.transactionType.capitalized)
-                    .font(.caption2)
+                    .font(.system(size: 10, design: .rounded))
                     .foregroundColor(.secondary)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 1)
+                    .background(typeColor.opacity(0.08))
+                    .cornerRadius(4)
             }
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, 3)
     }
 }

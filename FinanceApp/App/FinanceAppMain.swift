@@ -29,13 +29,34 @@ struct FinanceAppMain: App {
 // MARK: - Launch Screen
 
 private struct LaunchView: View {
+    @State private var pulse = false
+
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "chart.line.uptrend.xyaxis.circle.fill")
-                .font(.system(size: 64))
-                .foregroundStyle(.green)
+        VStack(spacing: 20) {
+            ZStack {
+                Circle()
+                    .fill(AppTheme.accent.opacity(0.10))
+                    .frame(width: 130, height: 130)
+                    .scaleEffect(pulse ? 1.12 : 0.92)
+                Circle()
+                    .fill(AppTheme.accent.opacity(0.18))
+                    .frame(width: 100, height: 100)
+                Image(systemName: "chart.line.uptrend.xyaxis.circle.fill")
+                    .font(.system(size: 56))
+                    .foregroundStyle(AppTheme.accent)
+            }
+            .onAppear {
+                withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
+                    pulse = true
+                }
+            }
+
+            Text("Finance App")
+                .font(AppTheme.displayFont(24))
+
             ProgressView()
-                .padding(.top, 8)
+                .tint(AppTheme.accent)
+                .padding(.top, 4)
         }
     }
 }
@@ -47,19 +68,33 @@ private struct ErrorView: View {
     let onRetry: () -> Void
 
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 48))
-                .foregroundColor(.red)
+        VStack(spacing: 20) {
+            ZStack {
+                Circle()
+                    .fill(AppTheme.expense.opacity(0.10))
+                    .frame(width: 100, height: 100)
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 44))
+                    .foregroundColor(AppTheme.expense)
+            }
+
             Text("Something went wrong")
-                .font(.title2.bold())
+                .font(AppTheme.displayFont(22))
+
             Text(message)
-                .font(.body)
+                .font(.system(.body, design: .rounded))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
-            Button("Retry", action: onRetry)
-                .buttonStyle(.borderedProminent)
+
+            Button(action: onRetry) {
+                Text("Retry")
+                    .font(.system(.headline, design: .rounded))
+                    .frame(maxWidth: 200)
+                    .padding(.vertical, 12)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(AppTheme.accent)
         }
         .padding()
     }

@@ -7,7 +7,7 @@ struct AddAccountView: View {
     @State private var name = ""
     @State private var currency = "USD"
 
-    private let currencies = ["USD", "EUR", "GBP", "MXN", "CAD", "JPY", "BRL", "ARS"]
+    private let currencies = ["USD", "EUR", "GBP", "MXN", "PEN", "CAD", "JPY", "BRL", "ARS", "CLP", "COP"]
 
     var body: some View {
         NavigationStack {
@@ -60,10 +60,13 @@ struct AddAccountView: View {
         case "EUR": return "🇪🇺"
         case "GBP": return "🇬🇧"
         case "MXN": return "🇲🇽"
+        case "PEN": return "🇵🇪"
         case "CAD": return "🇨🇦"
         case "JPY": return "🇯🇵"
         case "BRL": return "🇧🇷"
         case "ARS": return "🇦🇷"
+        case "CLP": return "🇨🇱"
+        case "COP": return "🇨🇴"
         default:    return "💰"
         }
     }

@@ -67,6 +67,102 @@ char *get_balance(const char *account_id);
 char *get_pending_sync(void);
 
 /**
+ * Get spending aggregated by category for an account within a date range.
+ *
+ * # Safety
+ * All pointer parameters must be valid C strings. Dates must be RFC3339 formatted.
+ */
+char *get_spending_by_category(const char *account_id,
+                               const char *from,
+                               const char *to);
+
+/**
+ * Get income vs expenses summary for an account within a date range.
+ *
+ * # Safety
+ * All pointer parameters must be valid C strings. Dates must be RFC3339 formatted.
+ */
+char *get_income_vs_expenses(const char *account_id,
+                             const char *from,
+                             const char *to);
+
+/**
+ * Create a new recurring transaction.
+ *
+ * # Safety
+ * All pointer parameters must be valid C strings.
+ */
+char *create_recurring_transaction(const char *account_id,
+                                   const char *category_id,
+                                   int64_t amount,
+                                   const char *transaction_type,
+                                   const char *description,
+                                   const char *frequency,
+                                   const char *start_date,
+                                   const char *end_date);
+
+/**
+ * List recurring transactions for an account.
+ *
+ * # Safety
+ * `account_id` must be a valid C string.
+ */
+char *list_recurring_transactions(const char *account_id);
+
+/**
+ * Delete a recurring transaction.
+ *
+ * # Safety
+ * `id` must be a valid C string.
+ */
+char *delete_recurring_transaction(const char *id);
+
+/**
+ * Process due recurring transactions and create actual transactions.
+ *
+ * # Safety
+ * This function is safe to call.
+ */
+char *process_due_recurring_transactions(void);
+
+/**
+ * Create a new budget.
+ *
+ * # Safety
+ * All pointer parameters must be valid C strings. `category_id` can be null for account-wide budgets.
+ */
+char *create_budget(const char *account_id,
+                    const char *category_id,
+                    const char *name,
+                    int64_t amount,
+                    const char *period,
+                    const char *start_date);
+
+/**
+ * List budgets for an account.
+ *
+ * # Safety
+ * `account_id` must be a valid C string.
+ */
+char *list_budgets(const char *account_id);
+
+/**
+ * Delete a budget.
+ *
+ * # Safety
+ * `id` must be a valid C string.
+ */
+char *delete_budget(const char *id);
+
+/**
+ * Get budget progress for a specific budget.
+ *
+ * # Safety
+ * `budget_id` must be a valid C string.
+ */
+char *get_budget_progress(const char *budget_id);
+
+/**
  * Free a string that was allocated by the FFI layer.
  *
  * # Safety

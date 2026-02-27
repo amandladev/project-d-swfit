@@ -75,4 +75,9 @@ struct DateUtils {
         formatter.unitsStyle = .short
         return formatter.localizedString(for: date, relativeTo: Date())
     }
+
+    /// Format a Date to RFC 3339 for API calls (alias for toRFC3339).
+    static func formatForAPI(_ date: Date) -> String {
+        toRFC3339(date)
+    }
 }

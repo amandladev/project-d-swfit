@@ -186,6 +186,81 @@ final class FinanceBridge {
         try call(get_balance(accountId))
     }
 
+    // MARK: - Statistics
+
+    static func getSpendingByCategory(accountId: String, from: String, to: String) throws -> [CategorySpending] {
+        try call(get_spending_by_category(accountId, from, to))
+    }
+
+    static func getIncomeVsExpenses(accountId: String, from: String, to: String) throws -> IncomeVsExpenses {
+        try call(get_income_vs_expenses(accountId, from, to))
+    }
+
+    // MARK: - Recurring Transactions
+
+    static func createRecurringTransaction(
+        accountId: String,
+        categoryId: String,
+        amount: Int64,
+        transactionType: String,
+        description: String,
+        frequency: String,
+        startDate: String,
+        endDate: String?
+    ) throws -> RecurringTransaction {
+        try call(
+            create_recurring_transaction(
+                accountId,
+                categoryId,
+                amount,
+                transactionType,
+                description,
+                frequency,
+                startDate,
+                endDate
+            )
+        )
+    }
+
+    static func listRecurringTransactions(accountId: String) throws -> [RecurringTransaction] {
+        try call(list_recurring_transactions(accountId))
+    }
+
+    static func deleteRecurringTransaction(id: String) throws {
+        try callVoid(delete_recurring_transaction(id))
+    }
+
+    static func processDueRecurringTransactions() throws -> [FinanceTransaction] {
+        try call(process_due_recurring_transactions())
+    }
+
+    // MARK: - Budgets
+
+    static func createBudget(
+        accountId: String,
+        categoryId: String?,
+        name: String,
+        amount: Int64,
+        period: String,
+        startDate: String
+    ) throws -> Budget {
+        try call(
+            create_budget(accountId, categoryId, name, amount, period, startDate)
+        )
+    }
+
+    static func listBudgets(accountId: String) throws -> [Budget] {
+        try call(list_budgets(accountId))
+    }
+
+    static func deleteBudget(id: String) throws {
+        try callVoid(delete_budget(id))
+    }
+
+    static func getBudgetProgress(budgetId: String) throws -> BudgetProgress {
+        try call(get_budget_progress(budgetId))
+    }
+
     // MARK: - Sync
 
     static func getPendingSync() throws -> [FinanceTransaction] {

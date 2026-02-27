@@ -13,15 +13,20 @@ struct SetupView: View {
 
             // Logo
             VStack(spacing: 14) {
-                Image(systemName: "chart.line.uptrend.xyaxis.circle.fill")
-                    .font(.system(size: 80))
-                    .foregroundStyle(.green)
+                ZStack {
+                    Circle()
+                        .fill(AppTheme.accent.opacity(0.10))
+                        .frame(width: 120, height: 120)
+                    Image(systemName: "chart.line.uptrend.xyaxis.circle.fill")
+                        .font(.system(size: 64))
+                        .foregroundStyle(AppTheme.accent)
+                }
 
                 Text("Finance App")
-                    .font(.largeTitle.bold())
+                    .font(AppTheme.displayFont(30))
 
                 Text("Take control of your finances")
-                    .font(.subheadline)
+                    .font(.system(.subheadline, design: .rounded))
                     .foregroundColor(.secondary)
             }
 
@@ -59,14 +64,14 @@ struct SetupView: View {
                         .padding()
                 } else {
                     Text("Get Started")
-                        .font(.headline)
+                        .font(.system(.headline, design: .rounded))
                         .frame(maxWidth: .infinity)
                         .padding()
                 }
             }
-            .background(isValid ? Color.accentColor : Color.gray.opacity(0.3))
+            .background(isValid ? AppTheme.accent : Color.gray.opacity(0.3))
             .foregroundColor(.white)
-            .cornerRadius(14)
+            .cornerRadius(16)
             .padding(.horizontal, 36)
             .disabled(!isValid || appViewModel.isLoading)
 

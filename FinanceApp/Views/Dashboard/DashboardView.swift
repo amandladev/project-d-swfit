@@ -3,6 +3,8 @@ import Charts
 
 struct DashboardView: View {
     @StateObject private var viewModel: DashboardViewModel
+    @Environment(\.colorScheme) private var colorScheme
+    @AppStorage("balanceHidden") private var balanceHidden = false
     let userId: String
 
     init(userId: String) {
@@ -16,6 +18,7 @@ struct DashboardView: View {
                 VStack(spacing: 20) {
                     // Balance Card
                     balanceCard
+                        .transition(.move(edge: .top).combined(with: .opacity))
 
                     // Income vs Expenses summary
                     incomeExpenseSummary
@@ -38,12 +41,13 @@ struct DashboardView: View {
                 .padding(.horizontal)
                 .padding(.bottom, 24)
             }
+            .background(AppTheme.surfaceBackground.ignoresSafeArea())
             .navigationTitle("Dashboard")
             .onAppear { viewModel.loadDashboard() }
             .refreshable { viewModel.loadDashboard() }
             .overlay {
                 if viewModel.isLoading && viewModel.accounts.isEmpty {
-                    ProgressView()
+                    BrandedLoadingView()
                 }
             }
         }
@@ -52,62 +56,139 @@ struct DashboardView: View {
     // MARK: - Balance Card
 
     private var balanceCard: some View {
-        VStack(spacing: 12) {
-            Text("Total Balance")
-                .font(.subheadline)
-                .foregroundColor(.white.opacity(0.8))
+        VStack(spacing: 14) {
+            HStack {
+                Text("Total Balance")
+                    .font(AppTheme.subheadlineFont)
+                    .foregroundColor(.white.opacity(0.75))
+                Spacer()
+                Button {
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
+                        balanceHidden.toggle()
+                    }
+                } label: {
+                    Image(systemName: balanceHidden ? "eye.slash.fill" : "eye.fill")
+                        .font(.body)
+                        .foregroundColor(.white.opacity(0.6))
+                }
+            }
 
-            Text(CurrencyFormatter.format(cents: viewModel.totalBalance))
-                .font(.system(size: 38, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
+            // Balance amount — always rendered for consistent height, masked when hidden
+            Group {
+                if viewModel.balancesByCurrency.count <= 1 {
+                    AnimatedCurrencyText(
+                        cents: viewModel.totalBalance,
+                        currency: viewModel.primaryCurrency,
+                        font: AppTheme.displayFont(40),
+                        color: .white
+                    )
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                } else {
+                    VStack(alignment: .leading, spacing: 4) {
+                        ForEach(viewModel.balancesByCurrency, id: \.currency) { entry in
+                            AnimatedCurrencyText(
+                                cents: entry.total,
+                                currency: entry.currency,
+                                font: AppTheme.displayFont(entry.currency == viewModel.primaryCurrency ? 36 : 24,
+                                                            weight: .bold),
+                                color: .white
+                            )
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+            .opacity(balanceHidden ? 0 : 1)
+            .blur(radius: balanceHidden ? 12 : 0)
+            .overlay(alignment: .leading) {
+                Text("••••••")
+                    .font(AppTheme.displayFont(40))
+                    .foregroundColor(.white.opacity(0.5))
+                    .opacity(balanceHidden ? 1 : 0)
+            }
+            .animation(.spring(response: 0.4, dampingFraction: 0.8), value: balanceHidden)
+
+            Divider()
+                .background(Color.white.opacity(0.2))
 
             HStack(spacing: 16) {
                 ForEach(viewModel.accounts.prefix(4)) { account in
-                    VStack(spacing: 2) {
+                    VStack(spacing: 3) {
                         Text(account.name)
-                            .font(.caption2)
-                            .foregroundColor(.white.opacity(0.7))
+                            .font(.system(size: 10, weight: .medium, design: .rounded))
+                            .foregroundColor(.white.opacity(0.6))
                             .lineLimit(1)
                         Text(CurrencyFormatter.format(
                             cents: viewModel.balances[account.id] ?? 0,
                             currency: account.currency
                         ))
-                        .font(.caption.weight(.semibold))
-                        .foregroundColor(.white)
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white.opacity(0.9))
+                        .opacity(balanceHidden ? 0 : 1)
+                        .blur(radius: balanceHidden ? 8 : 0)
+                        .overlay {
+                            Text("••••")
+                                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                .foregroundColor(.white.opacity(0.5))
+                                .opacity(balanceHidden ? 1 : 0)
+                        }
+                        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: balanceHidden)
                     }
                 }
             }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
-        .padding(.horizontal)
+        .padding(.horizontal, 20)
         .background(
-            LinearGradient(
-                colors: [Color(red: 0.15, green: 0.68, blue: 0.38), Color(red: 0.1, green: 0.5, blue: 0.55)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            ZStack {
+                AppTheme.balanceGradient
+                // Decorative circles
+                Circle()
+                    .fill(Color.white.opacity(0.05))
+                    .frame(width: 180, height: 180)
+                    .offset(x: 100, y: -60)
+                Circle()
+                    .fill(Color.white.opacity(0.04))
+                    .frame(width: 120, height: 120)
+                    .offset(x: -80, y: 50)
+            }
         )
-        .cornerRadius(20)
-        .shadow(color: .green.opacity(0.25), radius: 12, y: 6)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius))
+        .shadow(
+            color: AppTheme.accent.opacity(colorScheme == .dark ? 0.3 : 0.25),
+            radius: 16, y: 8
+        )
     }
 
     // MARK: - Income / Expense Summary
 
     private var incomeExpenseSummary: some View {
-        HStack(spacing: 12) {
-            SummaryCard(
-                title: "Income",
-                amount: viewModel.totalIncome,
-                icon: "arrow.up.circle.fill",
-                color: .green
-            )
-            SummaryCard(
-                title: "Expenses",
-                amount: viewModel.totalExpenses,
-                icon: "arrow.down.circle.fill",
-                color: .red
-            )
+        VStack(spacing: 8) {
+            HStack {
+                Text("This Month")
+                    .font(AppTheme.captionFont)
+                    .foregroundColor(.secondary)
+                Spacer()
+            }
+            HStack(spacing: 12) {
+                SummaryCard(
+                    title: "Income",
+                    amount: viewModel.totalIncome,
+                    currency: viewModel.primaryCurrency,
+                    icon: "arrow.up.circle.fill",
+                    gradient: AppTheme.incomeGradient,
+                    color: AppTheme.income
+                )
+                SummaryCard(
+                    title: "Expenses",
+                    amount: viewModel.totalExpenses,
+                    currency: viewModel.primaryCurrency,
+                    icon: "arrow.down.circle.fill",
+                    gradient: AppTheme.expenseGradient,
+                    color: AppTheme.expense
+                )
+            }
         }
     }
 
@@ -116,23 +197,23 @@ struct DashboardView: View {
     private var monthlyChart: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Monthly Trend")
-                .font(.headline)
+                .font(AppTheme.headlineFont)
 
             Chart(viewModel.monthlyData) { item in
                 BarMark(
                     x: .value("Month", item.month),
                     y: .value("Amount", CurrencyFormatter.toDecimal(cents: item.income))
                 )
-                .foregroundStyle(.green.opacity(0.8))
-                .cornerRadius(4)
+                .foregroundStyle(AppTheme.income.opacity(0.85))
+                .cornerRadius(6)
                 .position(by: .value("Type", "Income"))
 
                 BarMark(
                     x: .value("Month", item.month),
                     y: .value("Amount", CurrencyFormatter.toDecimal(cents: item.expenses))
                 )
-                .foregroundStyle(.red.opacity(0.8))
-                .cornerRadius(4)
+                .foregroundStyle(AppTheme.expense.opacity(0.85))
+                .cornerRadius(6)
                 .position(by: .value("Type", "Expenses"))
             }
             .chartYAxis {
@@ -140,10 +221,17 @@ struct DashboardView: View {
                     AxisValueLabel {
                         if let v = value.as(Double.self) {
                             Text("$\(Int(v))")
-                                .font(.caption2)
+                                .font(.system(size: 10, design: .rounded))
                         }
                     }
-                    AxisGridLine()
+                    AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [4]))
+                        .foregroundStyle(Color.secondary.opacity(0.3))
+                }
+            }
+            .chartXAxis {
+                AxisMarks { value in
+                    AxisValueLabel()
+                        .font(.system(size: 10, design: .rounded))
                 }
             }
             .chartLegend(position: .bottom, spacing: 16)
@@ -152,17 +240,14 @@ struct DashboardView: View {
             // Legend
             HStack(spacing: 16) {
                 Label("Income", systemImage: "circle.fill")
-                    .font(.caption)
-                    .foregroundColor(.green)
+                    .font(AppTheme.captionFont)
+                    .foregroundColor(AppTheme.income)
                 Label("Expenses", systemImage: "circle.fill")
-                    .font(.caption)
-                    .foregroundColor(.red)
+                    .font(AppTheme.captionFont)
+                    .foregroundColor(AppTheme.expense)
             }
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
-        .shadow(color: .black.opacity(0.05), radius: 8, y: 2)
+        .themedCard()
     }
 
     // MARK: - Spending by Category (Pie Chart)
@@ -170,41 +255,40 @@ struct DashboardView: View {
     private var spendingByCategorySection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Spending by Category")
-                .font(.headline)
+                .font(AppTheme.headlineFont)
 
             Text("This month")
-                .font(.caption)
+                .font(AppTheme.captionFont)
                 .foregroundColor(.secondary)
 
             SpendingPieChart(data: viewModel.spendingByCategory)
                 .frame(height: 220)
 
             // Category breakdown list
-            VStack(spacing: 8) {
+            VStack(spacing: 10) {
                 let totalSpending = viewModel.spendingByCategory.reduce(0) { $0 + $1.total }
-                ForEach(viewModel.spendingByCategory.prefix(6), id: \.category.id) { item in
+                ForEach(viewModel.spendingByCategory.prefix(6), id: \.category) { item in
                     HStack(spacing: 10) {
-                        Text(item.category.icon)
-                            .font(.title3)
-                        Text(item.category.name)
-                            .font(.subheadline)
+                        Text(item.category)
+                            .font(AppTheme.subheadlineFont)
                         Spacer()
                         Text(CurrencyFormatter.format(cents: item.total))
-                            .font(.subheadline.weight(.medium))
+                            .font(.system(.subheadline, design: .rounded).weight(.medium))
                         if totalSpending > 0 {
                             Text("\(Int(Double(item.total) / Double(totalSpending) * 100))%")
-                                .font(.caption)
+                                .font(AppTheme.captionFont)
                                 .foregroundColor(.secondary)
-                                .frame(width: 36, alignment: .trailing)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.secondary.opacity(0.1))
+                                .cornerRadius(4)
+                                .frame(width: 42, alignment: .trailing)
                         }
                     }
                 }
             }
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
-        .shadow(color: .black.opacity(0.05), radius: 8, y: 2)
+        .themedCard()
     }
 
     // MARK: - Recent Transactions
@@ -213,10 +297,14 @@ struct DashboardView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Recent Transactions")
-                    .font(.headline)
+                    .font(AppTheme.headlineFont)
                 Spacer()
                 Text("\(viewModel.recentTransactions.count)")
-                    .font(.caption)
+                    .font(AppTheme.captionFont)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(Color.secondary.opacity(0.12))
+                    .cornerRadius(8)
                     .foregroundColor(.secondary)
             }
 
@@ -224,19 +312,19 @@ struct DashboardView: View {
                 ForEach(viewModel.recentTransactions) { txn in
                     RecentTransactionRow(
                         transaction: txn,
-                        categories: viewModel.categories
+                        categories: viewModel.categories,
+                        currency: viewModel.accounts.first { $0.id == txn.accountId }?.currency ?? viewModel.primaryCurrency
                     )
 
                     if txn.id != viewModel.recentTransactions.last?.id {
-                        Divider().padding(.leading, 48)
+                        Divider()
+                            .padding(.leading, 52)
+                            .opacity(0.5)
                     }
                 }
             }
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
-        .shadow(color: .black.opacity(0.05), radius: 8, y: 2)
+        .themedCard()
     }
 }
 
@@ -245,28 +333,41 @@ struct DashboardView: View {
 private struct SummaryCard: View {
     let title: String
     let amount: Int64
+    var currency: String = "USD"
     let icon: String
+    let gradient: LinearGradient
     let color: Color
+    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Image(systemName: icon)
-                    .foregroundColor(color)
+                    .foregroundColor(.white)
                     .font(.title3)
+                    .padding(6)
+                    .background(color.opacity(0.3))
+                    .clipShape(Circle())
                 Spacer()
             }
             Text(title)
-                .font(.caption)
-                .foregroundColor(.secondary)
-            Text(CurrencyFormatter.format(cents: amount))
-                .font(.title3.weight(.semibold))
-                .foregroundColor(color)
+                .font(AppTheme.captionFont)
+                .foregroundColor(.white.opacity(0.8))
+            AnimatedCurrencyText(
+                cents: amount,
+                currency: currency,
+                font: AppTheme.displayFont(18, weight: .semibold),
+                color: .white
+            )
         }
-        .padding()
+        .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(color.opacity(0.08))
-        .cornerRadius(14)
+        .background(gradient)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(
+            color: color.opacity(colorScheme == .dark ? 0.3 : 0.2),
+            radius: 8, y: 4
+        )
     }
 }
 
@@ -275,6 +376,7 @@ private struct SummaryCard: View {
 private struct RecentTransactionRow: View {
     let transaction: FinanceTransaction
     let categories: [FinanceCategory]
+    var currency: String = "USD"
 
     private var category: FinanceCategory? {
         categories.first { $0.id == transaction.categoryId }
@@ -286,26 +388,31 @@ private struct RecentTransactionRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Text(category?.icon ?? "💰")
-                .font(.title2)
-                .frame(width: 36)
+            ZStack {
+                Circle()
+                    .fill((isExpense ? AppTheme.expense : AppTheme.income).opacity(0.12))
+                    .frame(width: 40, height: 40)
+                Text(category?.icon ?? "💰")
+                    .font(.title3)
+            }
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(transaction.description)
-                    .font(.subheadline.weight(.medium))
+                    .font(.system(.subheadline, design: .rounded).weight(.medium))
                     .lineLimit(1)
                 Text(DateUtils.relativeString(transaction.date))
-                    .font(.caption)
+                    .font(.system(.caption, design: .rounded))
                     .foregroundColor(.secondary)
             }
 
             Spacer()
 
             Text(CurrencyFormatter.format(
-                cents: isExpense ? -transaction.amount : transaction.amount
+                cents: isExpense ? -transaction.amount : transaction.amount,
+                currency: currency
             ))
-            .font(.subheadline.weight(.semibold))
-            .foregroundColor(isExpense ? .red : .green)
+            .font(.system(.subheadline, design: .rounded).weight(.semibold))
+            .foregroundColor(isExpense ? AppTheme.expense : AppTheme.income)
         }
         .padding(.vertical, 8)
     }

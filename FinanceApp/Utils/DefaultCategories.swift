@@ -9,6 +9,7 @@ struct DefaultCategories {
     }
 
     static let all: [Seed] = [
+        Seed(name: "Salary",           icon: "💼"),
         Seed(name: "Food & Dining",    icon: "🍔"),
         Seed(name: "Groceries",        icon: "🛒"),
         Seed(name: "Transportation",   icon: "🚗"),
@@ -23,7 +24,6 @@ struct DefaultCategories {
         Seed(name: "Fitness",          icon: "🏋️"),
         Seed(name: "Coffee",           icon: "☕"),
         Seed(name: "Gifts",            icon: "🎁"),
-        Seed(name: "Salary",           icon: "💼"),
         Seed(name: "Freelance",        icon: "💻"),
         Seed(name: "Investments",      icon: "📈"),
         Seed(name: "Other",            icon: "💰"),

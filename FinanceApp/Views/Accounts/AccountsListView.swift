@@ -2,17 +2,20 @@ import SwiftUI
 
 struct AccountsListView: View {
     @StateObject private var viewModel: AccountsViewModel
+    @StateObject private var categoriesVM: CategoriesViewModel
     @State private var showAddAccount = false
+    @State private var showTransfer = false
 
     init(userId: String) {
         _viewModel = StateObject(wrappedValue: AccountsViewModel(userId: userId))
+        _categoriesVM = StateObject(wrappedValue: CategoriesViewModel(userId: userId))
     }
 
     var body: some View {
         NavigationStack {
             Group {
                 if viewModel.isLoading && viewModel.accounts.isEmpty {
-                    ProgressView()
+                    BrandedLoadingView()
                 } else if viewModel.accounts.isEmpty {
                     EmptyStateView(
                         icon: "creditcard",
@@ -23,8 +26,17 @@ struct AccountsListView: View {
                     accountsList
                 }
             }
+            .background(AppTheme.surfaceBackground.ignoresSafeArea())
             .navigationTitle("Accounts")
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        showTransfer = true
+                    } label: {
+                        Image(systemName: "arrow.left.arrow.right")
+                    }
+                    .disabled(viewModel.accounts.count < 2)
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         showAddAccount = true
@@ -36,8 +48,15 @@ struct AccountsListView: View {
             .sheet(isPresented: $showAddAccount) {
                 AddAccountView(viewModel: viewModel)
             }
+            .sheet(isPresented: $showTransfer) {
+                TransferView(
+                    accountsVM: viewModel,
+                    categoriesVM: categoriesVM
+                )
+            }
             .onAppear {
                 viewModel.loadAccounts()
+                categoriesVM.loadCategories()
             }
             .refreshable {
                 viewModel.loadAccounts()
@@ -57,26 +76,40 @@ struct AccountsListView: View {
 
     private var accountsList: some View {
         List {
-            // Summary card
+            // Per-currency balance summary
             Section {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Total Balance")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        Text(CurrencyFormatter.format(cents: totalBalance))
-                            .font(.title.bold())
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Balance by Currency")
+                        .font(AppTheme.subheadlineFont)
+                        .foregroundColor(.secondary)
+
+                    ForEach(balancesByCurrency, id: \.currency) { entry in
+                        HStack {
+                            Text(entry.currency)
+                                .font(.system(.caption, design: .rounded).weight(.semibold))
+                                .foregroundColor(.secondary)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(Color.secondary.opacity(0.10))
+                                .cornerRadius(6)
+
+                            Spacer()
+
+                            AnimatedCurrencyText(
+                                cents: entry.total,
+                                currency: entry.currency,
+                                font: AppTheme.displayFont(22),
+                                color: entry.total >= 0 ? .primary : AppTheme.expense
+                            )
+                        }
                     }
-                    Spacer()
-                    Image(systemName: "chart.line.uptrend.xyaxis")
-                        .font(.title2)
-                        .foregroundColor(.green)
                 }
-                .padding(.vertical, 4)
+                .padding(.vertical, 6)
+                .listRowBackground(Color.clear)
             }
 
             // Account rows
-            Section("My Accounts") {
+            Section {
                 ForEach(viewModel.accounts) { account in
                     NavigationLink {
                         AccountDetailView(account: account, userId: viewModel.userId)
@@ -86,18 +119,31 @@ struct AccountsListView: View {
                             balance: viewModel.balances[account.id] ?? 0
                         )
                     }
-                }
-                .onDelete { indexSet in
-                    for index in indexSet {
-                        viewModel.deleteAccount(accountId: viewModel.accounts[index].id)
+                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        Button(role: .destructive) {
+                            viewModel.deleteAccount(accountId: account.id)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
                     }
                 }
+            } header: {
+                Text("My Accounts")
+                    .font(.system(.footnote, design: .rounded).weight(.semibold))
+                    .textCase(.uppercase)
+                    .foregroundColor(.secondary)
             }
         }
     }
 
-    private var totalBalance: Int64 {
-        viewModel.balances.values.reduce(0, +)
+    private var balancesByCurrency: [(currency: String, total: Int64)] {
+        var totals: [String: Int64] = [:]
+        for account in viewModel.accounts {
+            let bal = viewModel.balances[account.id] ?? 0
+            totals[account.currency, default: 0] += bal
+        }
+        return totals.map { (currency: $0.key, total: $0.value) }
+            .sorted { $0.total > $1.total }
     }
 }
 
@@ -108,31 +154,38 @@ struct AccountRowView: View {
     let balance: Int64
 
     var body: some View {
-        HStack {
+        HStack(spacing: 14) {
             // Icon
             ZStack {
                 Circle()
-                    .fill(currencyColor.opacity(0.15))
-                    .frame(width: 40, height: 40)
+                    .fill(currencyColor.opacity(0.12))
+                    .frame(width: 44, height: 44)
                 Text(currencyFlag)
                     .font(.title3)
             }
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(account.name)
-                    .font(.headline)
+                    .font(.system(.headline, design: .rounded))
                 Text(account.currency)
-                    .font(.caption)
+                    .font(.system(.caption, design: .rounded))
                     .foregroundColor(.secondary)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 1)
+                    .background(Color.secondary.opacity(0.1))
+                    .cornerRadius(4)
             }
 
             Spacer()
 
-            CurrencyText(cents: balance, currency: account.currency)
-                .font(.subheadline.weight(.semibold))
-                .foregroundColor(balance >= 0 ? .primary : .red)
+            AnimatedCurrencyText(
+                cents: balance,
+                currency: account.currency,
+                font: .system(.subheadline, design: .rounded).weight(.semibold),
+                color: balance >= 0 ? .primary : AppTheme.expense
+            )
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 6)
     }
 
     private var currencyColor: Color {
@@ -141,6 +194,9 @@ struct AccountRowView: View {
         case "EUR": return .blue
         case "GBP": return .purple
         case "MXN": return .orange
+        case "PEN": return .red
+        case "CLP": return .red
+        case "COP": return .yellow
         default:    return .gray
         }
     }
@@ -151,10 +207,13 @@ struct AccountRowView: View {
         case "EUR": return "🇪🇺"
         case "GBP": return "🇬🇧"
         case "MXN": return "🇲🇽"
+        case "PEN": return "🇵🇪"
         case "CAD": return "🇨🇦"
         case "JPY": return "🇯🇵"
         case "BRL": return "🇧🇷"
         case "ARS": return "🇦🇷"
+        case "CLP": return "🇨🇱"
+        case "COP": return "🇨🇴"
         default:    return "💰"
         }
     }

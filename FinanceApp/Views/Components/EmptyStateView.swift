@@ -6,19 +6,32 @@ struct EmptyStateView: View {
     let title: String
     let message: String
 
+    @State private var isAnimating = false
+
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
             Spacer()
 
-            Image(systemName: icon)
-                .font(.system(size: 56))
-                .foregroundColor(.secondary.opacity(0.6))
+            ZStack {
+                Circle()
+                    .fill(AppTheme.accent.opacity(0.08))
+                    .frame(width: 100, height: 100)
+                    .scaleEffect(isAnimating ? 1.05 : 0.95)
+                Image(systemName: icon)
+                    .font(.system(size: 40))
+                    .foregroundStyle(AppTheme.accent.opacity(0.6))
+            }
+            .onAppear {
+                withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
+                    isAnimating = true
+                }
+            }
 
             Text(title)
-                .font(.title2.bold())
+                .font(AppTheme.displayFont(22))
 
             Text(message)
-                .font(.body)
+                .font(.system(.body, design: .rounded))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
