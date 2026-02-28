@@ -20,16 +20,22 @@ struct ContentView: View {
                         Label("Accounts", systemImage: "creditcard.fill")
                     }
 
-                CategoriesListView(userId: userId)
+                SearchTransactionsView(userId: userId)
                     .tag(2)
+                    .tabItem {
+                        Label("Search", systemImage: "magnifyingglass")
+                    }
+
+                CategoriesListView(userId: userId)
+                    .tag(3)
                     .tabItem {
                         Label("Categories", systemImage: "tag.fill")
                     }
             }
             .tint(AppTheme.accent)
 
-            // Floating Action Button — hidden on Accounts tab
-            if selectedTab != 1 {
+            // Floating Action Button — hidden on Accounts and Search tabs
+            if selectedTab != 1 && selectedTab != 2 {
                 Button {
                     showQuickAdd = true
                 } label: {

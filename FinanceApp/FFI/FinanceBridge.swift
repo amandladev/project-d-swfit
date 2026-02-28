@@ -266,4 +266,51 @@ final class FinanceBridge {
     static func getPendingSync() throws -> [FinanceTransaction] {
         try call(get_pending_sync())
     }
+
+    // MARK: - Category Seeding
+
+    /// Seeds default categories from the backend. Idempotent.
+    static func seedDefaultCategories(userId: String) throws -> [FinanceCategory] {
+        try call(seed_default_categories(userId))
+    }
+
+    // MARK: - Exchange Rates
+
+    /// Seed bundled default exchange rates. Call once after init_database.
+    static func seedExchangeRates() throws {
+        try callVoid(seed_exchange_rates())
+    }
+
+    /// Update cached exchange rates from API data.
+    /// JSON format: `[{"from":"USD","to":"EUR","rate":0.92}, ...]`
+    static func updateExchangeRates(ratesJson: String) throws {
+        try callVoid(update_exchange_rates(ratesJson))
+    }
+
+    /// Set a manual exchange rate (user override — highest priority).
+    static func setManualExchangeRate(from: String, to: String, rate: Double) throws {
+        try callVoid(set_manual_exchange_rate(from, to, rate))
+    }
+
+    /// Convert cents between currencies using 3-tier resolution.
+    static func convertCurrency(amountCents: Int64, from: String, to: String) throws -> CurrencyConversion {
+        try call(convert_currency(amountCents, from, to))
+    }
+
+    /// Get rate freshness info for a currency pair.
+    static func getRateFreshness(from: String, to: String) throws -> RateFreshness {
+        try call(get_rate_freshness(from, to))
+    }
+
+    /// List all exchange rates from a base currency.
+    static func listExchangeRates(from: String) throws -> [ExchangeRate] {
+        try call(list_exchange_rates(from))
+    }
+
+    // MARK: - Search
+
+    /// Search transactions with flexible filtering. Only account_id is required.
+    static func searchTransactions(filterJson: String) throws -> [FinanceTransaction] {
+        try call(search_transactions(filterJson))
+    }
 }

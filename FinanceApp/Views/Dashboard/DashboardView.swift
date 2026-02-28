@@ -55,6 +55,8 @@ struct DashboardView: View {
 
     // MARK: - Balance Card
 
+    @State private var showCurrencyPicker = false
+
     private var balanceCard: some View {
         VStack(spacing: 14) {
             HStack {
@@ -62,6 +64,26 @@ struct DashboardView: View {
                     .font(AppTheme.subheadlineFont)
                     .foregroundColor(.white.opacity(0.75))
                 Spacer()
+
+                // Currency picker button
+                if viewModel.availableCurrencies.count > 1 {
+                    Button {
+                        showCurrencyPicker = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(viewModel.selectedCurrency)
+                                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 10, weight: .bold))
+                        }
+                        .foregroundColor(.white.opacity(0.8))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color.white.opacity(0.15))
+                        .clipShape(Capsule())
+                    }
+                }
+
                 Button {
                     withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
                         balanceHidden.toggle()
@@ -73,31 +95,14 @@ struct DashboardView: View {
                 }
             }
 
-            // Balance amount — always rendered for consistent height, masked when hidden
-            Group {
-                if viewModel.balancesByCurrency.count <= 1 {
-                    AnimatedCurrencyText(
-                        cents: viewModel.totalBalance,
-                        currency: viewModel.primaryCurrency,
-                        font: AppTheme.displayFont(40),
-                        color: .white
-                    )
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                } else {
-                    VStack(alignment: .leading, spacing: 4) {
-                        ForEach(viewModel.balancesByCurrency, id: \.currency) { entry in
-                            AnimatedCurrencyText(
-                                cents: entry.total,
-                                currency: entry.currency,
-                                font: AppTheme.displayFont(entry.currency == viewModel.primaryCurrency ? 36 : 24,
-                                                            weight: .bold),
-                                color: .white
-                            )
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-            }
+            // Single converted balance
+            AnimatedCurrencyText(
+                cents: viewModel.convertedTotalBalance,
+                currency: viewModel.selectedCurrency,
+                font: AppTheme.displayFont(40),
+                color: .white
+            )
+            .frame(maxWidth: .infinity, alignment: .leading)
             .opacity(balanceHidden ? 0 : 1)
             .blur(radius: balanceHidden ? 12 : 0)
             .overlay(alignment: .leading) {
@@ -159,6 +164,13 @@ struct DashboardView: View {
             color: AppTheme.accent.opacity(colorScheme == .dark ? 0.3 : 0.25),
             radius: 16, y: 8
         )
+        .confirmationDialog("Display Currency", isPresented: $showCurrencyPicker, titleVisibility: .visible) {
+            ForEach(viewModel.availableCurrencies, id: \.self) { currency in
+                Button(currency) {
+                    viewModel.switchCurrency(to: currency)
+                }
+            }
+        }
     }
 
     // MARK: - Income / Expense Summary
@@ -175,7 +187,7 @@ struct DashboardView: View {
                 SummaryCard(
                     title: "Income",
                     amount: viewModel.totalIncome,
-                    currency: viewModel.primaryCurrency,
+                    currency: viewModel.selectedCurrency,
                     icon: "arrow.up.circle.fill",
                     gradient: AppTheme.incomeGradient,
                     color: AppTheme.income
@@ -183,7 +195,7 @@ struct DashboardView: View {
                 SummaryCard(
                     title: "Expenses",
                     amount: viewModel.totalExpenses,
-                    currency: viewModel.primaryCurrency,
+                    currency: viewModel.selectedCurrency,
                     icon: "arrow.down.circle.fill",
                     gradient: AppTheme.expenseGradient,
                     color: AppTheme.expense
@@ -313,7 +325,7 @@ struct DashboardView: View {
                     RecentTransactionRow(
                         transaction: txn,
                         categories: viewModel.categories,
-                        currency: viewModel.accounts.first { $0.id == txn.accountId }?.currency ?? viewModel.primaryCurrency
+                        currency: viewModel.accounts.first { $0.id == txn.accountId }?.currency ?? viewModel.selectedCurrency
                     )
 
                     if txn.id != viewModel.recentTransactions.last?.id {

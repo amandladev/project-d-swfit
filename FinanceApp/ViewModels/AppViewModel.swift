@@ -29,6 +29,64 @@ class AppViewModel: ObservableObject {
                 // 1. Initialize the database
                 try FinanceBridge.initDatabase(path: dbPath)
 
+                // 2. Seed bundled exchange rates (idempotent)
+                try? FinanceBridge.seedExchangeRates()
+
+                // 3. Fetch fresh exchange rates from API (await so rates are ready before dashboard)
+                await ExchangeRateService.fetchAndUpdateRates()
+
+                // 4. Verify PEN→USD conversion works and write to temp file for debugging
+                var debugLog = ""
+
+                // Raw FFI call to see exact JSON response
+                let rawPtr = convert_currency(100, "PEN", "USD")
+                if let rawPtr = rawPtr {
+                    let rawJson = String(cString: rawPtr)
+                    debugLog += "RAW convert_currency JSON:\n\(rawJson)\n\n"
+                    free_string(rawPtr)
+                } else {
+                    debugLog += "RAW convert_currency returned NULL\n\n"
+                }
+
+                do {
+                    let test = try FinanceBridge.convertCurrency(amountCents: 100, from: "PEN", to: "USD")
+                    debugLog += "PEN→USD OK: 100 PEN cents → \(test.convertedAmountCents) USD cents (rate: \(test.rateUsed), source: \(test.source))\n"
+                } catch {
+                    debugLog += "PEN→USD FAILED: \(error)\n"
+                }
+
+                // Also test listing rates from PEN
+                do {
+                    let rates = try FinanceBridge.listExchangeRates(from: "PEN")
+                    debugLog += "PEN rates count: \(rates.count)\n"
+                    for r in rates {
+                        debugLog += "  PEN→\(r.toCurrency) = \(r.rate) (\(r.source))\n"
+                    }
+                } catch {
+                    debugLog += "listExchangeRates(PEN) FAILED: \(error)\n"
+                }
+
+                // Raw list_exchange_rates JSON
+                let rawListPtr = list_exchange_rates("PEN")
+                if let rawListPtr = rawListPtr {
+                    let rawJson = String(cString: rawListPtr)
+                    debugLog += "\nRAW list_exchange_rates JSON:\n\(rawJson)\n"
+                    free_string(rawListPtr)
+                }
+
+                // Raw get_rate_freshness JSON
+                let rawFreshPtr = get_rate_freshness("PEN", "USD")
+                if let rawFreshPtr = rawFreshPtr {
+                    let rawJson = String(cString: rawFreshPtr)
+                    debugLog += "\nRAW get_rate_freshness JSON:\n\(rawJson)\n"
+                    free_string(rawFreshPtr)
+                }
+
+                // Write debug log to tmp
+                let tmpPath = NSTemporaryDirectory() + "finance_debug.txt"
+                try? debugLog.write(toFile: tmpPath, atomically: true, encoding: .utf8)
+                NSLog("Debug log written to: %@", tmpPath)
+
                 // 2. Try to load saved user
                 if let userId = savedUserId {
                     do {
@@ -70,8 +128,8 @@ class AppViewModel: ObservableObject {
         Task.detached {
             do {
                 let user = try FinanceBridge.createUser(name: name, email: email)
-                // Seed default categories for the new user
-                DefaultCategories.seedIfNeeded(userId: user.id)
+                // Seed default categories from backend (idempotent)
+                let _ = try? FinanceBridge.seedDefaultCategories(userId: user.id)
                 await MainActor.run {
                     UserDefaults.standard.set(user.id, forKey: kUserIdKey)
                     UserDefaults(suiteName: kAppGroupId)?.set(user.id, forKey: kUserIdKey)
