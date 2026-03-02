@@ -39,10 +39,10 @@ enum BudgetPeriod: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .weekly:    return "Weekly"
-        case .monthly:   return "Monthly"
-        case .quarterly: return "Quarterly"
-        case .yearly:    return "Yearly"
+        case .weekly:    return L10n.tr("budgetPeriod.weekly")
+        case .monthly:   return L10n.tr("budgetPeriod.monthly")
+        case .quarterly: return L10n.tr("budgetPeriod.quarterly")
+        case .yearly:    return L10n.tr("budgetPeriod.yearly")
         }
     }
 }

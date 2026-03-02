@@ -22,9 +22,9 @@ struct RecurringTransactionsListView: View {
             if viewModel.recurringTransactions.isEmpty && !viewModel.isLoading {
                 if #available(iOS 17.0, *) {
                     ContentUnavailableView(
-                        "No Recurring Transactions",
+                        L10n.tr("recurring.noRecurring"),
                         systemImage: "arrow.triangle.2.circlepath",
-                        description: Text("Set up recurring transactions to automate your finances")
+                        description: Text(L10n.tr("recurring.noRecurringMessage"))
                     )
                     .listRowBackground(Color.clear)
                 } else {
@@ -32,9 +32,9 @@ struct RecurringTransactionsListView: View {
                         Image(systemName: "arrow.triangle.2.circlepath")
                             .font(.largeTitle)
                             .foregroundColor(.secondary)
-                        Text("No Recurring Transactions")
+                        Text(L10n.tr("recurring.noRecurring"))
                             .font(.headline)
-                        Text("Set up recurring transactions to automate your finances")
+                        Text(L10n.tr("recurring.noRecurringMessage"))
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
@@ -58,7 +58,7 @@ struct RecurringTransactionsListView: View {
                 }
             }
         }
-        .navigationTitle("Recurring")
+        .navigationTitle(L10n.tr("recurring.title"))
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
@@ -74,7 +74,7 @@ struct RecurringTransactionsListView: View {
                 } label: {
                     Image(systemName: "arrow.clockwise")
                 }
-                .help("Process due transactions")
+                .help(L10n.tr("recurring.processDue"))
             }
         }
         .sheet(isPresented: $showAddSheet) {
@@ -91,11 +91,11 @@ struct RecurringTransactionsListView: View {
                 ProgressView()
             }
         }
-        .alert("Error", isPresented: Binding(
+        .alert(L10n.tr("common.error"), isPresented: Binding(
             get: { viewModel.error != nil },
             set: { if !$0 { viewModel.error = nil } }
         )) {
-            Button("OK") { viewModel.error = nil }
+            Button(L10n.tr("common.ok")) { viewModel.error = nil }
         } message: {
             Text(viewModel.error ?? "")
         }
@@ -136,7 +136,7 @@ private struct RecurringTransactionRow: View {
                         .lineLimit(1)
 
                     if !isActive {
-                        Text("PAUSED")
+                        Text(L10n.tr("recurring.paused"))
                             .font(.caption2.weight(.bold))
                             .foregroundColor(.orange)
                             .padding(.horizontal, 6)
@@ -152,7 +152,7 @@ private struct RecurringTransactionRow: View {
                         .foregroundColor(.secondary)
 
                     if let nextDue = recurring.nextDueDate {
-                        Text("Next: \(DateUtils.dateOnlyString(nextDue))")
+                        Text(L10n.tr("recurring.next %@", DateUtils.dateOnlyString(nextDue)))
                             .font(.caption)
                             .foregroundColor(.blue)
                     }

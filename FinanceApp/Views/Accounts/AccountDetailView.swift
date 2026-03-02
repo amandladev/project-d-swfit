@@ -7,6 +7,15 @@ enum DateRangeFilter: String, CaseIterable {
     case week = "Week"
     case month = "Month"
     case custom = "Custom"
+
+    var displayName: String {
+        switch self {
+        case .all: return L10n.tr("dateFilter.all")
+        case .week: return L10n.tr("dateFilter.week")
+        case .month: return L10n.tr("dateFilter.month")
+        case .custom: return L10n.tr("dateFilter.custom")
+        }
+    }
 }
 
 struct AccountDetailView: View {
@@ -15,6 +24,7 @@ struct AccountDetailView: View {
 
     @StateObject private var transactionsVM: TransactionsViewModel
     @StateObject private var categoriesVM: CategoriesViewModel
+    @StateObject private var tagsVM: TagsViewModel
     @State private var showAddTransaction = false
     @State private var editingTransaction: FinanceTransaction?
     @State private var searchText = ""
@@ -28,6 +38,7 @@ struct AccountDetailView: View {
         self.userId = userId
         _transactionsVM = StateObject(wrappedValue: TransactionsViewModel(accountId: account.id))
         _categoriesVM = StateObject(wrappedValue: CategoriesViewModel(userId: userId))
+        _tagsVM = StateObject(wrappedValue: TagsViewModel(userId: userId))
     }
 
     var body: some View {
@@ -35,7 +46,7 @@ struct AccountDetailView: View {
             // Balance card
             Section {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Current Balance")
+                    Text(L10n.tr("accounts.currentBalance"))
                         .font(AppTheme.subheadlineFont)
                         .foregroundColor(.secondary)
                     AnimatedCurrencyText(
@@ -46,13 +57,13 @@ struct AccountDetailView: View {
                     )
                     HStack(spacing: 16) {
                         StatBadge(
-                            label: "Income",
+                            label: L10n.tr("dashboard.income"),
                             value: totalIncome,
                             currency: account.currency,
                             color: AppTheme.income
                         )
                         StatBadge(
-                            label: "Expenses",
+                            label: L10n.tr("dashboard.expenses"),
                             value: totalExpenses,
                             currency: account.currency,
                             color: AppTheme.expense
@@ -66,9 +77,9 @@ struct AccountDetailView: View {
             // Date range filter
             Section {
                 VStack(alignment: .leading, spacing: 8) {
-                    Picker("Period", selection: $dateFilter) {
+                    Picker(L10n.tr("dateFilter.period"), selection: $dateFilter) {
                         ForEach(DateRangeFilter.allCases, id: \.self) { filter in
-                            Text(filter.rawValue).tag(filter)
+                            Text(filter.displayName).tag(filter)
                         }
                     }
                     .pickerStyle(.segmented)
@@ -80,11 +91,11 @@ struct AccountDetailView: View {
                         HStack {
                             DatePicker("From", selection: $customFrom, displayedComponents: .date)
                                 .labelsHidden()
-                            Text("to")
+                            Text(L10n.tr("dateFilter.to"))
                                 .foregroundColor(.secondary)
                             DatePicker("To", selection: $customTo, displayedComponents: .date)
                                 .labelsHidden()
-                            Button("Apply") {
+                            Button(L10n.tr("common.apply")) {
                                 transactionsVM.loadTransactions(from: customFrom, to: customTo)
                             }
                             .buttonStyle(.bordered)
@@ -95,7 +106,7 @@ struct AccountDetailView: View {
             }
 
             // Quick Actions - Recurring & Budgets
-            Section("Manage") {
+            Section(L10n.tr("accountDetail.manage")) {
                 NavigationLink {
                     RecurringTransactionsListView(
                         accountId: account.id,
@@ -104,7 +115,7 @@ struct AccountDetailView: View {
                         categoriesVM: categoriesVM
                     )
                 } label: {
-                    Label("Recurring Transactions", systemImage: "arrow.triangle.2.circlepath")
+                    Label(L10n.tr("accountDetail.recurringTransactions"), systemImage: "arrow.triangle.2.circlepath")
                 }
 
                 NavigationLink {
@@ -115,7 +126,7 @@ struct AccountDetailView: View {
                         categoriesVM: categoriesVM
                     )
                 } label: {
-                    Label("Budgets", systemImage: "chart.bar.doc.horizontal")
+                    Label(L10n.tr("accountDetail.budgets"), systemImage: "chart.bar.doc.horizontal")
                 }
             }
 
@@ -131,7 +142,7 @@ struct AccountDetailView: View {
                             Image(systemName: searchText.isEmpty ? "tray" : "magnifyingglass")
                                 .font(.title2)
                                 .foregroundColor(.secondary)
-                            Text(searchText.isEmpty ? "No transactions yet" : "No matches found")
+                            Text(searchText.isEmpty ? L10n.tr("accountDetail.noTransactions") : L10n.tr("accountDetail.noMatches"))
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                         }
@@ -153,14 +164,14 @@ struct AccountDetailView: View {
                             Button(role: .destructive) {
                                 transactionsVM.deleteTransaction(transactionId: transaction.id)
                             } label: {
-                                Label("Delete", systemImage: "trash")
+                                Label(L10n.tr("common.delete"), systemImage: "trash")
                             }
                         }
                         .swipeActions(edge: .leading, allowsFullSwipe: true) {
                             Button {
                                 editingTransaction = transaction
                             } label: {
-                                Label("Edit", systemImage: "pencil")
+                                Label(L10n.tr("common.edit"), systemImage: "pencil")
                             }
                             .tint(AppTheme.accent)
                         }
@@ -168,14 +179,14 @@ struct AccountDetailView: View {
                 }
             } header: {
                 HStack {
-                    Text("Transactions")
+                    Text(L10n.tr("accountDetail.transactions"))
                     Spacer()
                     Text("\(filteredTransactions.count)")
                         .foregroundColor(.secondary)
                 }
             }
         }
-        .searchable(text: $searchText, prompt: "Search by description, category, or amount")
+        .searchable(text: $searchText, prompt: L10n.tr("accountDetail.searchPrompt"))
         .navigationTitle(account.name)
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
@@ -191,6 +202,7 @@ struct AccountDetailView: View {
             AddTransactionView(
                 transactionsVM: transactionsVM,
                 categoriesVM: categoriesVM,
+                tagsVM: tagsVM,
                 currency: account.currency
             )
         }
@@ -198,6 +210,7 @@ struct AccountDetailView: View {
             EditTransactionView(
                 transactionsVM: transactionsVM,
                 categoriesVM: categoriesVM,
+                tagsVM: tagsVM,
                 transaction: transaction,
                 currency: account.currency
             )
@@ -214,11 +227,11 @@ struct AccountDetailView: View {
                 BrandedLoadingView()
             }
         }
-        .alert("Error", isPresented: Binding<Bool>(
+        .alert(L10n.tr("common.error"), isPresented: Binding<Bool>(
             get: { transactionsVM.error != nil },
             set: { if !$0 { transactionsVM.error = nil } }
         )) {
-            Button("OK") { transactionsVM.error = nil }
+            Button(L10n.tr("common.ok")) { transactionsVM.error = nil }
         } message: {
             Text(transactionsVM.error ?? "")
         }
@@ -341,7 +354,7 @@ struct TransactionRowView: View {
                     .font(.system(.subheadline, design: .rounded).weight(.medium))
                     .lineLimit(1)
                 HStack(spacing: 4) {
-                    Text(category?.name ?? "Uncategorized")
+                    Text(category?.name ?? L10n.tr("transactions.uncategorized"))
                     Text("·")
                     Text(DateUtils.dateOnlyString(transaction.date))
                 }

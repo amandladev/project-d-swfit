@@ -19,9 +19,9 @@ struct TransferView: View {
         NavigationStack {
             Form {
                 // From / To
-                Section("Transfer Details") {
-                    Picker("From", selection: $fromAccountId) {
-                        Text("Select account").tag("")
+                Section(L10n.tr("transfer.details")) {
+                    Picker(L10n.tr("transfer.from"), selection: $fromAccountId) {
+                        Text(L10n.tr("transfer.selectAccount")).tag("")
                         ForEach(accountsVM.accounts) { account in
                             HStack {
                                 Text(account.name)
@@ -32,8 +32,8 @@ struct TransferView: View {
                         }
                     }
 
-                    Picker("To", selection: $toAccountId) {
-                        Text("Select account").tag("")
+                    Picker(L10n.tr("transfer.to"), selection: $toAccountId) {
+                        Text(L10n.tr("transfer.selectAccount")).tag("")
                         ForEach(availableDestinations) { account in
                             HStack {
                                 Text(account.name)
@@ -46,7 +46,7 @@ struct TransferView: View {
                 }
 
                 // Amount
-                Section("Amount") {
+                Section(L10n.tr("transfer.amount")) {
                     HStack {
                         if let fromAccount = selectedFromAccount {
                             Text(CurrencyFormatter.symbol(for: fromAccount.currency))
@@ -61,7 +61,7 @@ struct TransferView: View {
                     if let fromAccount = selectedFromAccount,
                        let balance = accountsVM.balances[fromAccount.id] {
                         HStack {
-                            Text("Available:")
+                            Text(L10n.tr("transfer.available"))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                             Text(CurrencyFormatter.format(cents: balance, currency: fromAccount.currency))
@@ -72,8 +72,8 @@ struct TransferView: View {
                 }
 
                 // Description & date
-                Section("Details") {
-                    TextField("Description", text: $description)
+                Section(L10n.tr("transactions.details")) {
+                    TextField(L10n.tr("transactions.description"), text: $description)
                         .textInputAutocapitalization(.sentences)
 
                     DatePicker(
@@ -85,35 +85,35 @@ struct TransferView: View {
 
                 // Summary
                 if isValid {
-                    Section("Summary") {
+                    Section(L10n.tr("transfer.summary")) {
                         summaryView
                     }
                 }
             }
-            .navigationTitle("Transfer")
+            .navigationTitle(L10n.tr("transfer.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(L10n.tr("common.cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Transfer") {
+                    Button(L10n.tr("transfer.title")) {
                         executeTransfer()
                     }
                     .disabled(!isValid || isProcessing)
                     .fontWeight(.semibold)
                 }
             }
-            .alert("Transfer Complete", isPresented: $showSuccess) {
-                Button("Done") { dismiss() }
+            .alert(L10n.tr("transfer.complete"), isPresented: $showSuccess) {
+                Button(L10n.tr("quickAdd.done")) { dismiss() }
             } message: {
-                Text("Money was transferred successfully.")
+                Text(L10n.tr("transfer.successMessage"))
             }
-            .alert("Error", isPresented: Binding<Bool>(
+            .alert(L10n.tr("common.error"), isPresented: Binding<Bool>(
                 get: { error != nil },
                 set: { if !$0 { error = nil } }
             )) {
-                Button("OK") { error = nil }
+                Button(L10n.tr("common.ok")) { error = nil }
             } message: {
                 Text(error ?? "")
             }
@@ -121,7 +121,7 @@ struct TransferView: View {
                 if isProcessing {
                     Color.black.opacity(0.15)
                         .ignoresSafeArea()
-                    ProgressView("Transferring...")
+                    ProgressView(L10n.tr("transfer.transferring"))
                         .padding()
                         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
                 }

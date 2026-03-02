@@ -4,6 +4,11 @@ options:
   deploymentTarget:
     iOS: "16.0"
   xcodeVersion: "15.0"
+  developmentLanguage: en
+  knownRegions:
+    - en
+    - es
+    - pt-BR
 
 settings:
   base:
@@ -48,7 +53,17 @@ targets:
       - path: FinanceApp/FFI
       - path: FinanceApp/Utils/CurrencyFormatter.swift
       - path: FinanceApp/Utils/DateUtils.swift
+      - path: FinanceApp/Utils/L10n.swift
       - path: FinanceApp/Theme/AppTheme.swift
+      - path: FinanceApp/Resources/en.lproj
+        type: folder
+        buildPhase: resources
+      - path: FinanceApp/Resources/es.lproj
+        type: folder
+        buildPhase: resources
+      - path: FinanceApp/Resources/pt-BR.lproj
+        type: folder
+        buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.sergiofinance.FinanceApp.FinanceWidget

@@ -19,15 +19,15 @@ struct AccountsListView: View {
                 } else if viewModel.accounts.isEmpty {
                     EmptyStateView(
                         icon: "creditcard",
-                        title: "No Accounts",
-                        message: "Create your first account to start tracking your finances."
+                        title: L10n.tr("accounts.noAccounts"),
+                        message: L10n.tr("accounts.noAccountsMessage")
                     )
                 } else {
                     accountsList
                 }
             }
             .background(AppTheme.surfaceBackground.ignoresSafeArea())
-            .navigationTitle("Accounts")
+            .navigationTitle(L10n.tr("accounts.title"))
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
@@ -61,11 +61,11 @@ struct AccountsListView: View {
             .refreshable {
                 viewModel.loadAccounts()
             }
-            .alert("Error", isPresented: Binding<Bool>(
+            .alert(L10n.tr("common.error"), isPresented: Binding<Bool>(
                 get: { viewModel.error != nil },
                 set: { if !$0 { viewModel.error = nil } }
             )) {
-                Button("OK") { viewModel.error = nil }
+                Button(L10n.tr("common.ok")) { viewModel.error = nil }
             } message: {
                 Text(viewModel.error ?? "")
             }
@@ -79,7 +79,7 @@ struct AccountsListView: View {
             // Per-currency balance summary
             Section {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Balance by Currency")
+                    Text(L10n.tr("accounts.balanceByCurrency"))
                         .font(AppTheme.subheadlineFont)
                         .foregroundColor(.secondary)
 
@@ -123,12 +123,12 @@ struct AccountsListView: View {
                         Button(role: .destructive) {
                             viewModel.deleteAccount(accountId: account.id)
                         } label: {
-                            Label("Delete", systemImage: "trash")
+                            Label(L10n.tr("common.delete"), systemImage: "trash")
                         }
                     }
                 }
             } header: {
-                Text("My Accounts")
+                Text(L10n.tr("accounts.myAccounts"))
                     .font(.system(.footnote, design: .rounded).weight(.semibold))
                     .textCase(.uppercase)
                     .foregroundColor(.secondary)

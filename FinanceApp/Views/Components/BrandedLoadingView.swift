@@ -37,7 +37,7 @@ struct BrandedLoadingView: View {
                 }
             }
 
-            Text("Loading...")
+            Text(L10n.tr("common.loading"))
                 .font(AppTheme.captionFont)
                 .foregroundColor(.secondary)
         }

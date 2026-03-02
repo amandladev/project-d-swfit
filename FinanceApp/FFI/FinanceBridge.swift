@@ -313,4 +313,53 @@ final class FinanceBridge {
     static func searchTransactions(filterJson: String) throws -> [FinanceTransaction] {
         try call(search_transactions(filterJson))
     }
+
+    // MARK: - Tags
+
+    /// Create a tag with an optional hex color.
+    static func createTag(userId: String, name: String, color: String?) throws -> Tag {
+        try call(create_tag(userId, name, color))
+    }
+
+    /// List all tags for a user (alphabetical).
+    static func listTags(userId: String) throws -> [Tag] {
+        try call(list_tags(userId))
+    }
+
+    /// Update a tag's name and/or color via JSON.
+    static func updateTag(tagId: String, updateJson: String) throws -> Tag {
+        try call(update_tag(tagId, updateJson))
+    }
+
+    /// Delete a tag and all its transaction associations.
+    static func deleteTag(tagId: String) throws {
+        try callVoid(delete_tag(tagId))
+    }
+
+    /// Add a tag to a transaction (idempotent).
+    static func addTagToTransaction(transactionId: String, tagId: String) throws {
+        try callVoid(add_tag_to_transaction(transactionId, tagId))
+    }
+
+    /// Remove a tag from a transaction.
+    static func removeTagFromTransaction(transactionId: String, tagId: String) throws {
+        try callVoid(remove_tag_from_transaction(transactionId, tagId))
+    }
+
+    /// Get all tags on a transaction.
+    static func getTransactionTags(transactionId: String) throws -> [Tag] {
+        try call(get_transaction_tags(transactionId))
+    }
+
+    /// Get all transaction IDs that have a given tag.
+    static func getTransactionsByTag(tagId: String) throws -> [String] {
+        try call(get_transactions_by_tag(tagId))
+    }
+
+    // MARK: - Budget Progress (Batch)
+
+    /// Get progress for all budgets in an account at once.
+    static func getAllBudgetsProgress(accountId: String) throws -> [BudgetProgress] {
+        try call(get_all_budgets_progress(accountId))
+    }
 }

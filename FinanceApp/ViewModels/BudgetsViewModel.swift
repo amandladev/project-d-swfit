@@ -22,11 +22,11 @@ class BudgetsViewModel: ObservableObject {
             do {
                 let budgets = try FinanceBridge.listBudgets(accountId: accountId)
 
-                // Fetch progress for each budget
+                // Fetch all progress in one batch call
                 var progressMap: [String: BudgetProgress] = [:]
-                for budget in budgets {
-                    if let progress = try? FinanceBridge.getBudgetProgress(budgetId: budget.id) {
-                        progressMap[budget.id] = progress
+                if let allProgress = try? FinanceBridge.getAllBudgetsProgress(accountId: accountId) {
+                    for p in allProgress {
+                        progressMap[p.budgetId] = p
                     }
                 }
 

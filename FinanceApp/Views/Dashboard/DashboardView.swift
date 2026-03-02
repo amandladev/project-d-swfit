@@ -42,7 +42,7 @@ struct DashboardView: View {
                 .padding(.bottom, 24)
             }
             .background(AppTheme.surfaceBackground.ignoresSafeArea())
-            .navigationTitle("Dashboard")
+            .navigationTitle(L10n.tr("dashboard.title"))
             .onAppear { viewModel.loadDashboard() }
             .refreshable { viewModel.loadDashboard() }
             .overlay {
@@ -60,7 +60,7 @@ struct DashboardView: View {
     private var balanceCard: some View {
         VStack(spacing: 14) {
             HStack {
-                Text("Total Balance")
+                Text(L10n.tr("dashboard.totalBalance"))
                     .font(AppTheme.subheadlineFont)
                     .foregroundColor(.white.opacity(0.75))
                 Spacer()
@@ -164,7 +164,7 @@ struct DashboardView: View {
             color: AppTheme.accent.opacity(colorScheme == .dark ? 0.3 : 0.25),
             radius: 16, y: 8
         )
-        .confirmationDialog("Display Currency", isPresented: $showCurrencyPicker, titleVisibility: .visible) {
+        .confirmationDialog(L10n.tr("dashboard.displayCurrency"), isPresented: $showCurrencyPicker, titleVisibility: .visible) {
             ForEach(viewModel.availableCurrencies, id: \.self) { currency in
                 Button(currency) {
                     viewModel.switchCurrency(to: currency)
@@ -178,14 +178,14 @@ struct DashboardView: View {
     private var incomeExpenseSummary: some View {
         VStack(spacing: 8) {
             HStack {
-                Text("This Month")
+                Text(L10n.tr("dashboard.thisMonth"))
                     .font(AppTheme.captionFont)
                     .foregroundColor(.secondary)
                 Spacer()
             }
             HStack(spacing: 12) {
                 SummaryCard(
-                    title: "Income",
+                    title: L10n.tr("dashboard.income"),
                     amount: viewModel.totalIncome,
                     currency: viewModel.selectedCurrency,
                     icon: "arrow.up.circle.fill",
@@ -193,7 +193,7 @@ struct DashboardView: View {
                     color: AppTheme.income
                 )
                 SummaryCard(
-                    title: "Expenses",
+                    title: L10n.tr("dashboard.expenses"),
                     amount: viewModel.totalExpenses,
                     currency: viewModel.selectedCurrency,
                     icon: "arrow.down.circle.fill",
@@ -208,25 +208,25 @@ struct DashboardView: View {
 
     private var monthlyChart: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Monthly Trend")
+            Text(L10n.tr("dashboard.monthlyTrend"))
                 .font(AppTheme.headlineFont)
 
             Chart(viewModel.monthlyData) { item in
                 BarMark(
-                    x: .value("Month", item.month),
-                    y: .value("Amount", CurrencyFormatter.toDecimal(cents: item.income))
+                    x: .value(L10n.tr("chart.month"), item.month),
+                    y: .value(L10n.tr("chart.amount"), CurrencyFormatter.toDecimal(cents: item.income))
                 )
                 .foregroundStyle(AppTheme.income.opacity(0.85))
                 .cornerRadius(6)
-                .position(by: .value("Type", "Income"))
+                .position(by: .value("Type", L10n.tr("chart.income")))
 
                 BarMark(
-                    x: .value("Month", item.month),
-                    y: .value("Amount", CurrencyFormatter.toDecimal(cents: item.expenses))
+                    x: .value(L10n.tr("chart.month"), item.month),
+                    y: .value(L10n.tr("chart.amount"), CurrencyFormatter.toDecimal(cents: item.expenses))
                 )
                 .foregroundStyle(AppTheme.expense.opacity(0.85))
                 .cornerRadius(6)
-                .position(by: .value("Type", "Expenses"))
+                .position(by: .value("Type", L10n.tr("chart.expenses")))
             }
             .chartYAxis {
                 AxisMarks(position: .leading) { value in
@@ -251,10 +251,10 @@ struct DashboardView: View {
 
             // Legend
             HStack(spacing: 16) {
-                Label("Income", systemImage: "circle.fill")
+                Label(L10n.tr("chart.income"), systemImage: "circle.fill")
                     .font(AppTheme.captionFont)
                     .foregroundColor(AppTheme.income)
-                Label("Expenses", systemImage: "circle.fill")
+                Label(L10n.tr("chart.expenses"), systemImage: "circle.fill")
                     .font(AppTheme.captionFont)
                     .foregroundColor(AppTheme.expense)
             }
@@ -266,10 +266,10 @@ struct DashboardView: View {
 
     private var spendingByCategorySection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Spending by Category")
+            Text(L10n.tr("dashboard.spendingByCategory"))
                 .font(AppTheme.headlineFont)
 
-            Text("This month")
+            Text(L10n.tr("dashboard.thisMonthLower"))
                 .font(AppTheme.captionFont)
                 .foregroundColor(.secondary)
 
@@ -308,7 +308,7 @@ struct DashboardView: View {
     private var recentTransactionsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Recent Transactions")
+                Text(L10n.tr("dashboard.recentTransactions"))
                     .font(AppTheme.headlineFont)
                 Spacer()
                 Text("\(viewModel.recentTransactions.count)")

@@ -22,10 +22,10 @@ struct SetupView: View {
                         .foregroundStyle(AppTheme.accent)
                 }
 
-                Text("Finance App")
+                Text(L10n.tr("setup.appName"))
                     .font(AppTheme.displayFont(30))
 
-                Text("Take control of your finances")
+                Text(L10n.tr("setup.tagline"))
                     .font(.system(.subheadline, design: .rounded))
                     .foregroundColor(.secondary)
             }
@@ -34,12 +34,12 @@ struct SetupView: View {
 
             // Form
             VStack(spacing: 14) {
-                TextField("Your Name", text: $name)
+                TextField(L10n.tr("setup.yourName"), text: $name)
                     .textFieldStyle(.roundedBorder)
                     .textContentType(.name)
                     .textInputAutocapitalization(.words)
 
-                TextField("Email", text: $email)
+                TextField(L10n.tr("setup.email"), text: $email)
                     .textFieldStyle(.roundedBorder)
                     .textContentType(.emailAddress)
                     .keyboardType(.emailAddress)
@@ -63,7 +63,7 @@ struct SetupView: View {
                         .frame(maxWidth: .infinity)
                         .padding()
                 } else {
-                    Text("Get Started")
+                    Text(L10n.tr("setup.getStarted"))
                         .font(.system(.headline, design: .rounded))
                         .frame(maxWidth: .infinity)
                         .padding()

@@ -12,11 +12,11 @@ struct AddAccountView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Account Details") {
-                    TextField("Account Name", text: $name)
+                Section(L10n.tr("accounts.accountDetails")) {
+                    TextField(L10n.tr("accounts.accountName"), text: $name)
                         .textInputAutocapitalization(.words)
 
-                    Picker("Currency", selection: $currency) {
+                    Picker(L10n.tr("accounts.currency"), selection: $currency) {
                         ForEach(currencies, id: \.self) { code in
                             HStack {
                                 Text(flag(for: code))
@@ -28,19 +28,19 @@ struct AddAccountView: View {
                 }
 
                 Section {
-                    Text("Examples: Checking, Savings, Cash, Credit Card")
+                    Text(L10n.tr("accounts.examples"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
             }
-            .navigationTitle("New Account")
+            .navigationTitle(L10n.tr("accounts.newAccount"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(L10n.tr("common.cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Create") {
+                    Button(L10n.tr("common.create")) {
                         viewModel.createAccount(
                             name: name.trimmingCharacters(in: .whitespaces),
                             currency: currency

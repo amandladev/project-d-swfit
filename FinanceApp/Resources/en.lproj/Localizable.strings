@@ -1,0 +1,261 @@
+/* 
+  Localizable.strings (English)
+  FinanceApp
+*/
+
+// MARK: - Common
+"common.cancel" = "Cancel";
+"common.save" = "Save";
+"common.create" = "Create";
+"common.delete" = "Delete";
+"common.edit" = "Edit";
+"common.ok" = "OK";
+"common.done" = "Done";
+"common.error" = "Error";
+"common.apply" = "Apply";
+"common.all" = "All";
+"common.select" = "Select";
+"common.reset" = "Reset";
+"common.search" = "Search";
+"common.loading" = "Loading...";
+"common.add" = "Add";
+
+// MARK: - Tabs
+"tab.dashboard" = "Dashboard";
+"tab.accounts" = "Accounts";
+"tab.search" = "Search";
+"tab.tags" = "Tags";
+"tab.categories" = "Categories";
+
+// MARK: - Dashboard
+"dashboard.title" = "Dashboard";
+"dashboard.totalBalance" = "Total Balance";
+"dashboard.displayCurrency" = "Display Currency";
+"dashboard.thisMonth" = "This Month";
+"dashboard.income" = "Income";
+"dashboard.expenses" = "Expenses";
+"dashboard.monthlyTrend" = "Monthly Trend";
+"dashboard.spendingByCategory" = "Spending by Category";
+"dashboard.thisMonthLower" = "This month";
+"dashboard.recentTransactions" = "Recent Transactions";
+
+// MARK: - Charts
+"chart.month" = "Month";
+"chart.amount" = "Amount";
+"chart.income" = "Income";
+"chart.expenses" = "Expenses";
+"chart.category" = "Category";
+
+// MARK: - Accounts
+"accounts.title" = "Accounts";
+"accounts.noAccounts" = "No Accounts";
+"accounts.noAccountsMessage" = "Create your first account to start tracking your finances.";
+"accounts.balanceByCurrency" = "Balance by Currency";
+"accounts.myAccounts" = "My Accounts";
+"accounts.currentBalance" = "Current Balance";
+"accounts.newAccount" = "New Account";
+"accounts.accountDetails" = "Account Details";
+"accounts.accountName" = "Account Name";
+"accounts.currency" = "Currency";
+"accounts.examples" = "Examples: Checking, Savings, Cash, Credit Card";
+
+// MARK: - Transactions
+"transactions.title" = "Transactions";
+"transactions.noTransactions" = "No transactions yet";
+"transactions.noMatches" = "No matches found";
+"transactions.newTransaction" = "New Transaction";
+"transactions.editTransaction" = "Edit Transaction";
+"transactions.deleteTransaction" = "Delete Transaction";
+"transactions.quickAdd" = "Quick Add";
+"transactions.type" = "Type";
+"transactions.details" = "Details";
+"transactions.description" = "Description";
+"transactions.date" = "Date";
+"transactions.category" = "Category";
+"transactions.noCategoriesAvailable" = "No categories available";
+"transactions.createCategoryFirst" = "Go to the Categories tab to create one first.";
+"transactions.whatWasItFor" = "What was it for?";
+"transactions.account" = "Account";
+"transactions.transactionAdded" = "Transaction Added!";
+"transactions.addAnother" = "Add Another";
+"transactions.addExpense" = "Add Expense";
+"transactions.addIncome" = "Add Income";
+"transactions.uncategorized" = "Uncategorized";
+
+// MARK: - Transaction Types
+"transactionType.expense" = "Expense";
+"transactionType.income" = "Income";
+"transactionType.transfer" = "Transfer";
+
+// MARK: - Categories
+"categories.title" = "Categories";
+"categories.noCategories" = "No Categories";
+"categories.noCategoriesMessage" = "Create categories to organize your transactions.";
+"categories.newCategory" = "New Category";
+"categories.categoryDetails" = "Category Details";
+"categories.categoryName" = "Category Name";
+"categories.chooseIcon" = "Choose an Icon";
+"categories.added %@" = "Added %@";
+
+// MARK: - Tags
+"tags.title" = "Tags";
+"tags.noTags" = "No Tags";
+"tags.noTagsMessage" = "Create tags to label and organize your transactions.";
+"tags.newTag" = "New Tag";
+"tags.editTag" = "Edit Tag";
+"tags.deleteTag" = "Delete Tag";
+"tags.tagDetails" = "Tag Details";
+"tags.tagName" = "Tag Name";
+"tags.color" = "Color";
+"tags.noTagsAvailable" = "No tags available";
+"tags.added %@" = "Added %@";
+
+// MARK: - Budgets
+"budgets.title" = "Budgets";
+"budgets.noBudgets" = "No Budgets";
+"budgets.noBudgetsMessage" = "Create budgets to track your spending limits";
+"budgets.newBudget" = "New Budget";
+"budgets.budgetInfo" = "Budget Info";
+"budgets.budgetName" = "Budget Name";
+"budgets.period" = "Period";
+"budgets.startDate" = "Start Date";
+"budgets.scope" = "Scope";
+"budgets.allCategories" = "All Categories";
+"budgets.budgetAlerts" = "Budget Alerts";
+"budgets.alertsDescription" = "You'll be alerted at 80%, 100%, and 120% of your budget limit.";
+"budgets.overBudget" = "Over Budget!";
+"budgets.budgetReached" = "Budget Reached";
+"budgets.almostThere" = "Almost There";
+"budgets.onTrack" = "On Track";
+"budgets.allCategoriesBullet" = "• All Categories";
+"budgets.spent %@" = "Spent: %@";
+"budgets.budget %@" = "Budget: %@";
+"budgets.remaining %@" = "%@ remaining";
+"budgets.overBy %@" = "Over by %@";
+"budgets.limit %@" = "Limit: %@";
+
+// MARK: - Budget Periods
+"budgetPeriod.weekly" = "Weekly";
+"budgetPeriod.monthly" = "Monthly";
+"budgetPeriod.quarterly" = "Quarterly";
+"budgetPeriod.yearly" = "Yearly";
+
+// MARK: - Recurring Transactions
+"recurring.title" = "Recurring";
+"recurring.noRecurring" = "No Recurring Transactions";
+"recurring.noRecurringMessage" = "Set up recurring transactions to automate your finances";
+"recurring.newRecurring" = "New Recurring";
+"recurring.frequency" = "Frequency";
+"recurring.startDate" = "Start Date";
+"recurring.hasEndDate" = "Has End Date";
+"recurring.endDate" = "End Date";
+"recurring.processDue" = "Process due transactions";
+"recurring.paused" = "PAUSED";
+"recurring.next %@" = "Next: %@";
+
+// MARK: - Recurring Frequencies
+"frequency.daily" = "Daily";
+"frequency.weekly" = "Weekly";
+"frequency.biWeekly" = "Bi-Weekly";
+"frequency.monthly" = "Monthly";
+"frequency.quarterly" = "Quarterly";
+"frequency.yearly" = "Yearly";
+
+// MARK: - Search
+"search.title" = "Search";
+"search.searchTransactions" = "Search transactions...";
+"search.dateRange" = "Date range";
+"search.clearAll" = "Clear all";
+"search.searchYourTransactions" = "Search your transactions";
+"search.searchHint" = "Type a description or use filters to find transactions";
+"search.noResults" = "No results found";
+"search.adjustFilters" = "Try adjusting your filters or search term";
+"search.clearFilters" = "Clear Filters";
+"search.results %lld" = "%lld results";
+"search.filters" = "Filters";
+"search.transactionType" = "Transaction Type";
+"search.amountRange" = "Amount Range";
+"search.minAmount" = "Min ($)";
+"search.maxAmount" = "Max ($)";
+"search.dateRangeSection" = "Date Range";
+"search.fromDate" = "From date";
+"search.toDate" = "To date";
+"search.from" = "From";
+"search.to" = "To";
+
+// MARK: - Transfers
+"transfer.title" = "Transfer";
+"transfer.details" = "Transfer Details";
+"transfer.from" = "From";
+"transfer.to" = "To";
+"transfer.selectAccount" = "Select account";
+"transfer.amount" = "Amount";
+"transfer.available" = "Available:";
+"transfer.description" = "Description";
+"transfer.summary" = "Summary";
+"transfer.transferButton" = "Transfer";
+"transfer.complete" = "Transfer Complete";
+"transfer.successMessage" = "Money was transferred successfully.";
+"transfer.transferring" = "Transferring...";
+
+// MARK: - Date Filters
+"dateFilter.all" = "All";
+"dateFilter.week" = "Week";
+"dateFilter.month" = "Month";
+"dateFilter.custom" = "Custom";
+"dateFilter.to" = "to";
+
+// MARK: - Onboarding
+"setup.appName" = "Finance App";
+"setup.tagline" = "Take control of your finances";
+"setup.yourName" = "Your Name";
+"setup.email" = "Email";
+"setup.getStarted" = "Get Started";
+
+// MARK: - Account Detail
+"accountDetail.manage" = "Manage";
+"accountDetail.recurringTransactions" = "Recurring Transactions";
+"accountDetail.budgets" = "Budgets";
+"accountDetail.searchPrompt" = "Search by description, category, or amount";
+"accountDetail.noTransactions" = "No transactions yet";
+"accountDetail.noMatches" = "No matches found";
+"accountDetail.transactions" = "Transactions";
+
+// MARK: - Date Filters
+"dateFilter.all" = "All";
+"dateFilter.week" = "Week";
+"dateFilter.month" = "Month";
+"dateFilter.custom" = "Custom";
+"dateFilter.to" = "to";
+"dateFilter.period" = "Period";
+
+// MARK: - Quick Add
+"quickAdd.title" = "Quick Add";
+"quickAdd.whatWasItFor" = "What was it for?";
+"quickAdd.account" = "Account";
+"quickAdd.category" = "Category";
+"quickAdd.add %@" = "Add %@";
+"quickAdd.transactionAdded" = "Transaction Added!";
+"quickAdd.addAnother" = "Add Another";
+"quickAdd.done" = "Done";
+
+// MARK: - Categories (extra)
+"categories.category" = "Category";
+"categories.noCategoriesAvailable" = "No categories available";
+
+// MARK: - Budgets (extra)
+"budgets.periodSection" = "Period";
+"budgets.allCategoriesToggle" = "All Categories";
+"budgets.over %@" = "Over by %@";
+
+// MARK: - Recurring (extra)
+"recurring.recurrence" = "Recurrence";
+
+// MARK: - Search (extra)
+"search.account" = "Account";
+"search.type" = "Type";
+"search.all" = "All";
+"search.min" = "Min ($)";
+"search.max" = "Max ($)";
+"search.tryAdjusting" = "Try adjusting your filters or search term";
+"search.reset" = "Reset";

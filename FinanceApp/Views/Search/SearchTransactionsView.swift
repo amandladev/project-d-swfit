@@ -34,7 +34,7 @@ struct SearchTransactionsView: View {
                 }
             }
             .background(AppTheme.surfaceBackground.ignoresSafeArea())
-            .navigationTitle("Search")
+            .navigationTitle(L10n.tr("search.title"))
             .onAppear { viewModel.loadPickerData() }
             .sheet(isPresented: $showFilters) {
                 FilterSheet(viewModel: viewModel)
@@ -52,7 +52,7 @@ struct SearchTransactionsView: View {
                     .foregroundColor(.secondary)
                     .font(.body)
 
-                TextField("Search transactions...", text: $viewModel.queryText)
+                TextField(L10n.tr("search.searchTransactions"), text: $viewModel.queryText)
                     .font(.system(.body, design: .rounded))
                     .submitLabel(.search)
                     .onSubmit { viewModel.search() }
@@ -119,7 +119,7 @@ struct SearchTransactionsView: View {
                 }
 
                 if viewModel.dateFrom != nil || viewModel.dateTo != nil {
-                    filterChip("Date range", icon: "calendar") {
+                    filterChip(L10n.tr("search.dateRange"), icon: "calendar") {
                         viewModel.dateFrom = nil
                         viewModel.dateTo = nil
                     }
@@ -128,7 +128,7 @@ struct SearchTransactionsView: View {
                 Button {
                     viewModel.clearFilters()
                 } label: {
-                    Text("Clear all")
+                    Text(L10n.tr("search.clearAll"))
                         .font(.system(.caption, design: .rounded).weight(.medium))
                         .foregroundColor(AppTheme.expense)
                 }
@@ -176,10 +176,10 @@ struct SearchTransactionsView: View {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 48))
                 .foregroundColor(.secondary.opacity(0.4))
-            Text("Search your transactions")
+            Text(L10n.tr("search.searchYourTransactions"))
                 .font(AppTheme.headlineFont)
                 .foregroundColor(.secondary)
-            Text("Type a description or use filters to find transactions")
+            Text(L10n.tr("search.searchHint"))
                 .font(AppTheme.captionFont)
                 .foregroundColor(.secondary.opacity(0.7))
                 .multilineTextAlignment(.center)
@@ -194,13 +194,13 @@ struct SearchTransactionsView: View {
             Image(systemName: "doc.text.magnifyingglass")
                 .font(.system(size: 48))
                 .foregroundColor(.secondary.opacity(0.4))
-            Text("No results found")
+            Text(L10n.tr("search.noResults"))
                 .font(AppTheme.headlineFont)
                 .foregroundColor(.secondary)
-            Text("Try adjusting your filters or search term")
+            Text(L10n.tr("search.tryAdjusting"))
                 .font(AppTheme.captionFont)
                 .foregroundColor(.secondary.opacity(0.7))
-            Button("Clear Filters") {
+            Button(L10n.tr("search.clearFilters")) {
                 viewModel.clearFilters()
             }
             .font(.system(.subheadline, design: .rounded).weight(.medium))
@@ -215,7 +215,7 @@ struct SearchTransactionsView: View {
         ScrollView {
             LazyVStack(spacing: 0) {
                 HStack {
-                    Text("\(viewModel.results.count) results")
+                    Text(L10n.tr("search.results %lld", viewModel.results.count))
                         .font(AppTheme.captionFont)
                         .foregroundColor(.secondary)
                     Spacer()
@@ -322,8 +322,8 @@ private struct FilterSheet: View {
         NavigationStack {
             Form {
                 // Account
-                Section("Account") {
-                    Picker("Account", selection: $viewModel.selectedAccountId) {
+                Section(L10n.tr("search.account")) {
+                    Picker(L10n.tr("search.account"), selection: $viewModel.selectedAccountId) {
                         ForEach(viewModel.accounts) { acc in
                             Text(acc.name).tag(acc.id as String?)
                         }
@@ -332,9 +332,9 @@ private struct FilterSheet: View {
                 }
 
                 // Transaction Type
-                Section("Type") {
-                    Picker("Transaction Type", selection: $viewModel.selectedType) {
-                        Text("All").tag(nil as TransactionType?)
+                Section(L10n.tr("search.type")) {
+                    Picker(L10n.tr("search.transactionType"), selection: $viewModel.selectedType) {
+                        Text(L10n.tr("search.all")).tag(nil as TransactionType?)
                         ForEach(TransactionType.allCases, id: \.self) { type in
                             Label(type.displayName, systemImage: type.icon)
                                 .tag(type as TransactionType?)
@@ -344,9 +344,9 @@ private struct FilterSheet: View {
                 }
 
                 // Category
-                Section("Category") {
-                    Picker("Category", selection: $viewModel.selectedCategoryId) {
-                        Text("All").tag(nil as String?)
+                Section(L10n.tr("categories.category")) {
+                    Picker(L10n.tr("categories.category"), selection: $viewModel.selectedCategoryId) {
+                        Text(L10n.tr("search.all")).tag(nil as String?)
                         ForEach(viewModel.categories) { cat in
                             Text("\(cat.icon) \(cat.name)").tag(cat.id as String?)
                         }
@@ -355,22 +355,22 @@ private struct FilterSheet: View {
                 }
 
                 // Amount Range
-                Section("Amount Range") {
+                Section(L10n.tr("search.amountRange")) {
                     HStack {
-                        TextField("Min ($)", text: $viewModel.minAmount)
+                        TextField(L10n.tr("search.min"), text: $viewModel.minAmount)
                             .keyboardType(.numberPad)
                             .font(.system(.body, design: .rounded))
                         Text("–")
                             .foregroundColor(.secondary)
-                        TextField("Max ($)", text: $viewModel.maxAmount)
+                        TextField(L10n.tr("search.max"), text: $viewModel.maxAmount)
                             .keyboardType(.numberPad)
                             .font(.system(.body, design: .rounded))
                     }
                 }
 
                 // Date Range
-                Section("Date Range") {
-                    Toggle("From date", isOn: Binding(
+                Section(L10n.tr("search.dateRangeSection")) {
+                    Toggle(L10n.tr("search.fromDate"), isOn: Binding(
                         get: { viewModel.dateFrom != nil },
                         set: { viewModel.dateFrom = $0 ? Calendar.current.date(byAdding: .month, value: -1, to: Date()) : nil }
                     ))
@@ -381,7 +381,7 @@ private struct FilterSheet: View {
                         ), displayedComponents: .date)
                     }
 
-                    Toggle("To date", isOn: Binding(
+                    Toggle(L10n.tr("search.toDate"), isOn: Binding(
                         get: { viewModel.dateTo != nil },
                         set: { viewModel.dateTo = $0 ? Date() : nil }
                     ))
@@ -393,17 +393,17 @@ private struct FilterSheet: View {
                     }
                 }
             }
-            .navigationTitle("Filters")
+            .navigationTitle(L10n.tr("search.filters"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Reset") {
+                    Button(L10n.tr("search.reset")) {
                         viewModel.clearFilters()
                     }
                     .foregroundColor(AppTheme.expense)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Search") {
+                    Button(L10n.tr("search.title")) {
                         viewModel.search()
                         dismiss()
                     }

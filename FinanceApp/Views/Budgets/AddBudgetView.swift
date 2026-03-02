@@ -17,8 +17,8 @@ struct AddBudgetView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Budget Info") {
-                    TextField("Budget Name", text: $name)
+                Section(L10n.tr("budgets.budgetInfo")) {
+                    TextField(L10n.tr("budgets.budgetName"), text: $name)
                         .textInputAutocapitalization(.words)
 
                     HStack {
@@ -31,26 +31,26 @@ struct AddBudgetView: View {
                     }
                 }
 
-                Section("Period") {
-                    Picker("Period", selection: $period) {
+                Section(L10n.tr("budgets.periodSection")) {
+                    Picker(L10n.tr("budgets.periodSection"), selection: $period) {
                         ForEach(BudgetPeriod.allCases) { p in
                             Text(p.displayName).tag(p)
                         }
                     }
 
-                    DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
+                    DatePicker(L10n.tr("budgets.startDate"), selection: $startDate, displayedComponents: .date)
                 }
 
-                Section("Scope") {
-                    Toggle("All Categories", isOn: $isAccountWide)
+                Section(L10n.tr("budgets.scope")) {
+                    Toggle(L10n.tr("budgets.allCategoriesToggle"), isOn: $isAccountWide)
 
                     if !isAccountWide {
                         if categoriesVM.categories.isEmpty {
-                            Text("No categories available")
+                            Text(L10n.tr("categories.noCategories"))
                                 .foregroundColor(.secondary)
                         } else {
-                            Picker("Category", selection: $selectedCategoryId) {
-                                Text("Select").tag("")
+                            Picker(L10n.tr("categories.category"), selection: $selectedCategoryId) {
+                                Text(L10n.tr("common.select")).tag("")
                                 ForEach(categoriesVM.categories) { cat in
                                     Text("\(cat.icon) \(cat.name)").tag(cat.id)
                                 }
@@ -61,23 +61,23 @@ struct AddBudgetView: View {
 
                 Section {
                     VStack(alignment: .leading, spacing: 6) {
-                        Label("Budget Alerts", systemImage: "bell.badge")
+                        Label(L10n.tr("budgets.budgetAlerts"), systemImage: "bell.badge")
                             .font(.subheadline.weight(.medium))
-                        Text("You'll be alerted at 80%, 100%, and 120% of your budget limit.")
+                        Text(L10n.tr("budgets.alertsDescription"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
                     .listRowBackground(Color.orange.opacity(0.06))
                 }
             }
-            .navigationTitle("New Budget")
+            .navigationTitle(L10n.tr("budgets.newBudget"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(L10n.tr("common.cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { save() }
+                    Button(L10n.tr("common.save")) { save() }
                         .disabled(!isValid)
                         .fontWeight(.semibold)
                 }

@@ -31,12 +31,12 @@ enum RecurrenceFrequency: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .daily:      return "Daily"
-        case .weekly:     return "Weekly"
-        case .biWeekly:   return "Bi-Weekly"
-        case .monthly:    return "Monthly"
-        case .quarterly:  return "Quarterly"
-        case .yearly:     return "Yearly"
+        case .daily:      return L10n.tr("frequency.daily")
+        case .weekly:     return L10n.tr("frequency.weekly")
+        case .biWeekly:   return L10n.tr("frequency.biWeekly")
+        case .monthly:    return L10n.tr("frequency.monthly")
+        case .quarterly:  return L10n.tr("frequency.quarterly")
+        case .yearly:     return L10n.tr("frequency.yearly")
         }
     }
 }

@@ -21,7 +21,7 @@ struct AddRecurringTransactionView: View {
             Form {
                 // Type selector
                 Section {
-                    Picker("Type", selection: $transactionType) {
+                    Picker(L10n.tr("transactions.type"), selection: $transactionType) {
                         ForEach([TransactionType.expense, .income], id: \.self) { type in
                             Text(type.displayName).tag(type)
                         }
@@ -32,7 +32,7 @@ struct AddRecurringTransactionView: View {
                 }
 
                 // Amount & details
-                Section("Details") {
+                Section(L10n.tr("transactions.details")) {
                     HStack {
                         Text(CurrencyFormatter.symbol(for: currency))
                             .foregroundColor(.secondary)
@@ -42,18 +42,18 @@ struct AddRecurringTransactionView: View {
                             .font(.title3)
                     }
 
-                    TextField("Description", text: $description)
+                    TextField(L10n.tr("transactions.description"), text: $description)
                         .textInputAutocapitalization(.sentences)
                 }
 
                 // Category
-                Section("Category") {
+                Section(L10n.tr("categories.category")) {
                     if categoriesVM.categories.isEmpty {
-                        Text("No categories available")
+                        Text(L10n.tr("categories.noCategories"))
                             .foregroundColor(.secondary)
                     } else {
-                        Picker("Category", selection: $selectedCategoryId) {
-                            Text("Select").tag("")
+                        Picker(L10n.tr("categories.category"), selection: $selectedCategoryId) {
+                            Text(L10n.tr("common.select")).tag("")
                             ForEach(categoriesVM.categories) { cat in
                                 Text("\(cat.icon) \(cat.name)").tag(cat.id)
                             }
@@ -62,30 +62,30 @@ struct AddRecurringTransactionView: View {
                 }
 
                 // Frequency
-                Section("Recurrence") {
-                    Picker("Frequency", selection: $frequency) {
+                Section(L10n.tr("recurring.recurrence")) {
+                    Picker(L10n.tr("recurring.frequency"), selection: $frequency) {
                         ForEach(RecurrenceFrequency.allCases) { freq in
                             Text(freq.displayName).tag(freq)
                         }
                     }
 
-                    DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
+                    DatePicker(L10n.tr("recurring.startDate"), selection: $startDate, displayedComponents: .date)
 
-                    Toggle("Has End Date", isOn: $hasEndDate)
+                    Toggle(L10n.tr("recurring.hasEndDate"), isOn: $hasEndDate)
 
                     if hasEndDate {
-                        DatePicker("End Date", selection: $endDate, displayedComponents: .date)
+                        DatePicker(L10n.tr("recurring.endDate"), selection: $endDate, displayedComponents: .date)
                     }
                 }
             }
-            .navigationTitle("New Recurring")
+            .navigationTitle(L10n.tr("recurring.newRecurring"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(L10n.tr("common.cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { save() }
+                    Button(L10n.tr("common.save")) { save() }
                         .disabled(!isValid)
                         .fontWeight(.semibold)
                 }

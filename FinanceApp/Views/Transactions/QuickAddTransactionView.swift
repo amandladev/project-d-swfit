@@ -40,11 +40,11 @@ struct QuickAddTransactionView: View {
                 }
             }
             .background(AppTheme.surfaceBackground.ignoresSafeArea())
-            .navigationTitle("Quick Add")
+            .navigationTitle(L10n.tr("quickAdd.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(L10n.tr("common.cancel")) { dismiss() }
                 }
             }
             .onAppear { loadData() }
@@ -64,7 +64,7 @@ struct QuickAddTransactionView: View {
                 amountField
 
                 // Description
-                TextField("What was it for?", text: $description)
+                TextField(L10n.tr("quickAdd.whatWasItFor"), text: $description)
                     .font(.system(.body, design: .rounded))
                     .padding(14)
                     .background(Color(.secondarySystemGroupedBackground))
@@ -149,7 +149,7 @@ struct QuickAddTransactionView: View {
 
     private var accountPicker: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Account")
+            Text(L10n.tr("quickAdd.account"))
                 .font(.system(.caption, design: .rounded).weight(.semibold))
                 .foregroundColor(.secondary)
                 .textCase(.uppercase)
@@ -188,7 +188,7 @@ struct QuickAddTransactionView: View {
 
     private var categoryPicker: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Category")
+            Text(L10n.tr("quickAdd.category"))
                 .font(.system(.caption, design: .rounded).weight(.semibold))
                 .foregroundColor(.secondary)
                 .textCase(.uppercase)
@@ -248,7 +248,7 @@ struct QuickAddTransactionView: View {
                         .tint(.white)
                 } else {
                     Image(systemName: "plus.circle.fill")
-                    Text("Add \(transactionType.displayName)")
+                    Text(L10n.tr("quickAdd.add %@", transactionType.displayName))
                         .fontWeight(.semibold)
                 }
             }
@@ -278,7 +278,7 @@ struct QuickAddTransactionView: View {
             }
             .transition(.scale.combined(with: .opacity))
 
-            Text("Transaction Added!")
+            Text(L10n.tr("quickAdd.transactionAdded"))
                 .font(AppTheme.displayFont(22))
 
             Text(CurrencyFormatter.format(
@@ -301,7 +301,7 @@ struct QuickAddTransactionView: View {
                         amountFocused = true
                     }
                 } label: {
-                    Text("Add Another")
+                    Text(L10n.tr("quickAdd.addAnother"))
                         .font(.system(.body, design: .rounded).weight(.medium))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
@@ -313,7 +313,7 @@ struct QuickAddTransactionView: View {
                 Button {
                     dismiss()
                 } label: {
-                    Text("Done")
+                    Text(L10n.tr("quickAdd.done"))
                         .font(.system(.body, design: .rounded).weight(.semibold))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)

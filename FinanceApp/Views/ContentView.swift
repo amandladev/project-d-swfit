@@ -11,31 +11,37 @@ struct ContentView: View {
                 DashboardView(userId: userId)
                     .tag(0)
                     .tabItem {
-                        Label("Dashboard", systemImage: "chart.pie.fill")
+                        Label(L10n.tr("tab.dashboard"), systemImage: "chart.pie.fill")
                     }
 
                 AccountsListView(userId: userId)
                     .tag(1)
                     .tabItem {
-                        Label("Accounts", systemImage: "creditcard.fill")
+                        Label(L10n.tr("tab.accounts"), systemImage: "creditcard.fill")
                     }
 
                 SearchTransactionsView(userId: userId)
                     .tag(2)
                     .tabItem {
-                        Label("Search", systemImage: "magnifyingglass")
+                        Label(L10n.tr("tab.search"), systemImage: "magnifyingglass")
+                    }
+
+                TagsListView(userId: userId)
+                    .tag(3)
+                    .tabItem {
+                        Label(L10n.tr("tab.tags"), systemImage: "number")
                     }
 
                 CategoriesListView(userId: userId)
-                    .tag(3)
+                    .tag(4)
                     .tabItem {
-                        Label("Categories", systemImage: "tag.fill")
+                        Label(L10n.tr("tab.categories"), systemImage: "tag.fill")
                     }
             }
             .tint(AppTheme.accent)
 
-            // Floating Action Button — hidden on Accounts and Search tabs
-            if selectedTab != 1 && selectedTab != 2 {
+            // Floating Action Button — hidden on Accounts, Search, and Tags tabs
+            if selectedTab != 1 && selectedTab != 2 && selectedTab != 3 {
                 Button {
                     showQuickAdd = true
                 } label: {

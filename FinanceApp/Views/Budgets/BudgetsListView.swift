@@ -22,9 +22,9 @@ struct BudgetsListView: View {
             if viewModel.budgets.isEmpty && !viewModel.isLoading {
                 if #available(iOS 17.0, *) {
                     ContentUnavailableView(
-                        "No Budgets",
+                        L10n.tr("budgets.noBudgets"),
                         systemImage: "chart.bar.doc.horizontal",
-                        description: Text("Create budgets to track your spending limits")
+                        description: Text(L10n.tr("budgets.noBudgetsMessage"))
                     )
                     .listRowBackground(Color.clear)
                 } else {
@@ -32,9 +32,9 @@ struct BudgetsListView: View {
                         Image(systemName: "chart.bar.doc.horizontal")
                             .font(.largeTitle)
                             .foregroundColor(.secondary)
-                        Text("No Budgets")
+                        Text(L10n.tr("budgets.noBudgets"))
                             .font(.headline)
-                        Text("Create budgets to track your spending limits")
+                        Text(L10n.tr("budgets.noBudgetsMessage"))
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
@@ -59,7 +59,7 @@ struct BudgetsListView: View {
                 }
             }
         }
-        .navigationTitle("Budgets")
+        .navigationTitle(L10n.tr("tab.budgets"))
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
@@ -83,11 +83,11 @@ struct BudgetsListView: View {
                 ProgressView()
             }
         }
-        .alert("Error", isPresented: Binding(
+        .alert(L10n.tr("common.error"), isPresented: Binding(
             get: { viewModel.error != nil },
             set: { if !$0 { viewModel.error = nil } }
         )) {
-            Button("OK") { viewModel.error = nil }
+            Button(L10n.tr("common.ok")) { viewModel.error = nil }
         } message: {
             Text(viewModel.error ?? "")
         }
@@ -119,10 +119,10 @@ private struct BudgetRow: View {
     }
 
     private var statusLabel: String {
-        if progressPercentage >= 1.2 { return "Over Budget!" }
-        if progressPercentage >= 1.0 { return "Budget Reached" }
-        if progressPercentage >= 0.8 { return "Almost There" }
-        return "On Track"
+        if progressPercentage >= 1.2 { return L10n.tr("budgets.overBudget") }
+        if progressPercentage >= 1.0 { return L10n.tr("budgets.budgetReached") }
+        if progressPercentage >= 0.8 { return L10n.tr("budgets.almostThere") }
+        return L10n.tr("budgets.onTrack")
     }
 
     var body: some View {
@@ -141,7 +141,7 @@ private struct BudgetRow: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                         if category == nil {
-                            Text("• All Categories")
+                            Text(L10n.tr("budgets.allCategoriesBullet"))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -177,28 +177,28 @@ private struct BudgetRow: View {
                     .frame(height: 8)
 
                     HStack {
-                        Text("Spent: \(CurrencyFormatter.format(cents: prog.spent, currency: currency))")
+                        Text(L10n.tr("budgets.spent %@", CurrencyFormatter.format(cents: prog.spent, currency: currency)))
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Spacer()
-                        Text("Budget: \(CurrencyFormatter.format(cents: prog.budgetAmount, currency: currency))")
+                        Text(L10n.tr("budgets.budget %@", CurrencyFormatter.format(cents: prog.budgetAmount, currency: currency)))
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
 
                     if prog.remaining > 0 {
-                        Text("\(CurrencyFormatter.format(cents: prog.remaining, currency: currency)) remaining")
+                        Text(L10n.tr("budgets.remaining %@", CurrencyFormatter.format(cents: prog.remaining, currency: currency)))
                             .font(.caption)
                             .foregroundColor(.green)
                     } else {
-                        Text("Over by \(CurrencyFormatter.format(cents: -prog.remaining, currency: currency))")
+                        Text(L10n.tr("budgets.over %@", CurrencyFormatter.format(cents: -prog.remaining, currency: currency)))
                             .font(.caption)
                             .foregroundColor(.red)
                     }
                 }
             } else {
                 HStack {
-                    Text("Limit: \(CurrencyFormatter.format(cents: budget.amount, currency: currency))")
+                    Text(L10n.tr("budgets.limit %@", CurrencyFormatter.format(cents: budget.amount, currency: currency)))
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Spacer()

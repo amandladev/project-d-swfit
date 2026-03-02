@@ -26,7 +26,7 @@ struct SpendingPieChart: View {
     private var sectorChart: some View {
         Chart(Array(data.prefix(8).enumerated()), id: \.element.category) { index, item in
             SectorMark(
-                angle: .value("Amount", item.total),
+                angle: .value(L10n.tr("chart.amount"), item.total),
                 innerRadius: .ratio(0.55),
                 angularInset: 1.5
             )
@@ -47,8 +47,8 @@ struct SpendingPieChart: View {
     private var barFallback: some View {
         Chart(Array(data.prefix(8).enumerated()), id: \.element.category) { index, item in
             BarMark(
-                x: .value("Amount", CurrencyFormatter.toDecimal(cents: item.total)),
-                y: .value("Category", item.category)
+                x: .value(L10n.tr("chart.amount"), CurrencyFormatter.toDecimal(cents: item.total)),
+                y: .value(L10n.tr("chart.category"), item.category)
             )
             .foregroundStyle(colors[index % colors.count])
             .cornerRadius(6)

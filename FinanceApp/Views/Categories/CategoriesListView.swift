@@ -16,14 +16,14 @@ struct CategoriesListView: View {
                 } else if viewModel.categories.isEmpty {
                     EmptyStateView(
                         icon: "tag",
-                        title: "No Categories",
-                        message: "Create categories to organize your transactions."
+                        title: L10n.tr("categories.noCategories"),
+                        message: L10n.tr("categories.noCategoriesMessage")
                     )
                 } else {
                     categoriesList
                 }
             }
-            .navigationTitle("Categories")
+            .navigationTitle(L10n.tr("categories.title"))
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
@@ -42,11 +42,11 @@ struct CategoriesListView: View {
             .refreshable {
                 viewModel.loadCategories()
             }
-            .alert("Error", isPresented: Binding<Bool>(
+            .alert(L10n.tr("common.error"), isPresented: Binding<Bool>(
                 get: { viewModel.error != nil },
                 set: { if !$0 { viewModel.error = nil } }
             )) {
-                Button("OK") { viewModel.error = nil }
+                Button(L10n.tr("common.ok")) { viewModel.error = nil }
             } message: {
                 Text(viewModel.error ?? "")
             }
@@ -69,7 +69,7 @@ struct CategoriesListView: View {
                         Text(category.name)
                             .font(.system(.body, design: .rounded).weight(.medium))
                         if let created = category.createdAt {
-                            Text("Added \(DateUtils.relativeString(created))")
+                            Text(L10n.tr("categories.added %@", DateUtils.relativeString(created)))
                                 .font(.system(.caption, design: .rounded))
                                 .foregroundColor(.secondary)
                         }
@@ -82,7 +82,7 @@ struct CategoriesListView: View {
                     Button(role: .destructive) {
                         viewModel.deleteCategory(categoryId: category.id)
                     } label: {
-                        Label("Delete", systemImage: "trash")
+                        Label(L10n.tr("common.delete"), systemImage: "trash")
                     }
                 }
             }

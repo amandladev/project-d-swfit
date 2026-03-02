@@ -17,7 +17,7 @@ struct AddCategoryView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Category Details") {
+                Section(L10n.tr("categories.categoryDetails")) {
                     HStack(spacing: 12) {
                         Text(selectedIcon)
                             .font(.largeTitle)
@@ -26,14 +26,14 @@ struct AddCategoryView: View {
                                 RoundedRectangle(cornerRadius: 12)
                                     .fill(Color.accentColor.opacity(0.12))
                             )
-                        TextField("Category Name", text: $name)
+                        TextField(L10n.tr("categories.categoryName"), text: $name)
                             .textInputAutocapitalization(.words)
                             .font(.headline)
                     }
                     .padding(.vertical, 4)
                 }
 
-                Section("Choose an Icon") {
+                Section(L10n.tr("categories.chooseIcon")) {
                     LazyVGrid(
                         columns: Array(repeating: GridItem(.flexible()), count: 8),
                         spacing: 10
@@ -67,14 +67,14 @@ struct AddCategoryView: View {
                     .padding(.vertical, 8)
                 }
             }
-            .navigationTitle("New Category")
+            .navigationTitle(L10n.tr("categories.newCategory"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(L10n.tr("common.cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Create") {
+                    Button(L10n.tr("common.create")) {
                         viewModel.createCategory(
                             name: name.trimmingCharacters(in: .whitespaces),
                             icon: selectedIcon

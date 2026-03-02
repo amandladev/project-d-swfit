@@ -24,9 +24,9 @@ enum TransactionType: String, Codable, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .expense:  return "Expense"
-        case .income:   return "Income"
-        case .transfer: return "Transfer"
+        case .expense:  return L10n.tr("transactionType.expense")
+        case .income:   return L10n.tr("transactionType.income")
+        case .transfer: return L10n.tr("transactionType.transfer")
         }
     }
 
