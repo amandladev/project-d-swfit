@@ -19,6 +19,17 @@
 char *init_database(const char *path);
 
 /**
+ * Initialize an encrypted database (SQLCipher) at the given path.
+ * Must be called before any other function. The key is the encryption passphrase.
+ * On first use, creates an encrypted DB. On subsequent uses, decrypts it.
+ *
+ * # Safety
+ * `path` and `key` must be valid C string pointers.
+ */
+char *init_database_encrypted(const char *path,
+                              const char *key);
+
+/**
  * Create a new account.
  *
  * # Safety
@@ -111,12 +122,14 @@ char *create_recurring_transaction(const char *account_id,
                                    const char *end_date);
 
 /**
- * List recurring transactions for an account.
+ * List recurring transactions for an account (paginated).
  *
  * # Safety
  * `account_id` must be a valid C string.
  */
-char *list_recurring_transactions(const char *account_id);
+char *list_recurring_transactions(const char *account_id,
+                                  int64_t limit,
+                                  int64_t offset);
 
 /**
  * Delete a recurring transaction.
@@ -125,6 +138,25 @@ char *list_recurring_transactions(const char *account_id);
  * `id` must be a valid C string.
  */
 char *delete_recurring_transaction(const char *id);
+
+/**
+ * Get a single recurring transaction by ID.
+ *
+ * # Safety
+ * `id` must be a valid C string containing a UUID.
+ */
+char *get_recurring_transaction(const char *id);
+
+/**
+ * Update a recurring transaction.
+ *
+ * Pass a JSON object with optional fields: `{"amount": 5000, "description": "...", "is_active": false}`.
+ *
+ * # Safety
+ * All pointer parameters must be valid C strings.
+ */
+char *update_recurring_transaction(const char *id,
+                                   const char *update_json);
 
 /**
  * Process due recurring transactions and create actual transactions.
@@ -170,6 +202,25 @@ char *delete_budget(const char *id);
  * `budget_id` must be a valid C string.
  */
 char *get_budget_progress(const char *budget_id);
+
+/**
+ * Get a single budget by ID.
+ *
+ * # Safety
+ * `budget_id` must be a valid C string containing a UUID.
+ */
+char *get_budget(const char *budget_id);
+
+/**
+ * Update a budget.
+ *
+ * Pass a JSON object with optional fields: `{"name": "...", "amount": 50000, "period": "monthly"}`.
+ *
+ * # Safety
+ * All pointer parameters must be valid C strings.
+ */
+char *update_budget(const char *budget_id,
+                    const char *update_json);
 
 /**
  * Seed bundled default exchange rates into the database. Call once after init_database.
@@ -304,12 +355,14 @@ char *remove_tag_from_transaction(const char *transaction_id,
 char *get_transaction_tags(const char *transaction_id);
 
 /**
- * Get all transaction IDs that have a given tag.
+ * Get paginated transaction IDs that have a given tag.
  *
  * # Safety
  * `tag_id` must be a valid C string containing a UUID.
  */
-char *get_transactions_by_tag(const char *tag_id);
+char *get_transactions_by_tag(const char *tag_id,
+                              int64_t limit,
+                              int64_t offset);
 
 /**
  * Get progress for all budgets in an account.
@@ -318,6 +371,56 @@ char *get_transactions_by_tag(const char *tag_id);
  * `account_id` must be a valid C string containing a UUID.
  */
 char *get_all_budgets_progress(const char *account_id);
+
+/**
+ * Get monthly trends for an account within a date range.
+ *
+ * Returns JSON array of { year, month, income, expenses, net, transaction_count }.
+ *
+ * # Safety
+ * All pointer parameters must be valid C strings.
+ */
+char *get_monthly_trends(const char *account_id,
+                         const char *from,
+                         const char *to);
+
+/**
+ * Get daily spending for an account within a date range.
+ *
+ * Returns JSON array of { date, amount, transaction_count }.
+ *
+ * # Safety
+ * All pointer parameters must be valid C strings.
+ */
+char *get_daily_spending(const char *account_id,
+                         const char *from,
+                         const char *to);
+
+/**
+ * Create a transfer between two accounts.
+ *
+ * Creates two linked transactions: an expense from the source account and an
+ * income to the destination account. Returns JSON with both transactions.
+ *
+ * # Safety
+ * All pointer parameters must be valid C strings.
+ */
+char *create_transfer(const char *from_account_id,
+                      const char *to_account_id,
+                      const char *category_id,
+                      int64_t amount,
+                      const char *description,
+                      const char *date);
+
+/**
+ * Get the linked transaction of a transfer.
+ *
+ * Given one side of a transfer, returns the other side.
+ *
+ * # Safety
+ * `transaction_id` must be a valid C string.
+ */
+char *get_linked_transaction(const char *transaction_id);
 
 /**
  * Free a string that was allocated by the FFI layer.
@@ -361,6 +464,25 @@ char *list_accounts(const char *user_id);
 char *delete_account(const char *account_id);
 
 /**
+ * Get a single account by ID.
+ *
+ * # Safety
+ * `account_id` must be a valid C string containing a UUID.
+ */
+char *get_account(const char *account_id);
+
+/**
+ * Update an account's name and/or currency.
+ *
+ * Pass a JSON object with optional fields: `{"name": "...", "currency": "..."}`.
+ *
+ * # Safety
+ * All pointer parameters must be valid C strings.
+ */
+char *update_account(const char *account_id,
+                     const char *update_json);
+
+/**
  * List all categories for a user.
  *
  * # Safety
@@ -375,6 +497,26 @@ char *list_categories(const char *user_id);
  * `category_id` must be a valid C string containing a UUID.
  */
 char *delete_category(const char *category_id);
+
+/**
+ * Get a single category by ID.
+ *
+ * # Safety
+ * `category_id` must be a valid C string containing a UUID.
+ */
+char *get_category(const char *category_id);
+
+/**
+ * Update a category's name and/or icon.
+ *
+ * Pass a JSON object with optional fields: `{"name": "...", "icon": "..."}`.
+ * Set `"icon": null` to remove the icon.
+ *
+ * # Safety
+ * All pointer parameters must be valid C strings.
+ */
+char *update_category(const char *category_id,
+                      const char *update_json);
 
 /**
  * Edit an existing transaction.
@@ -400,10 +542,14 @@ char *delete_transaction(const char *transaction_id);
 /**
  * List transactions for an account.
  *
+ * Returns a paginated result with `items`, `total_count`, and `has_more`.
+ *
  * # Safety
  * `account_id` must be a valid C string containing a UUID.
  */
-char *list_transactions(const char *account_id);
+char *list_transactions(const char *account_id,
+                        int64_t limit,
+                        int64_t offset);
 
 /**
  * List transactions for an account within a date range.
@@ -413,6 +559,8 @@ char *list_transactions(const char *account_id);
  */
 char *list_transactions_by_date_range(const char *account_id,
                                       const char *from,
-                                      const char *to);
+                                      const char *to,
+                                      int64_t limit,
+                                      int64_t offset);
 
 #endif  /* FINANCE_FFI_H */

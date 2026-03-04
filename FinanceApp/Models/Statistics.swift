@@ -57,3 +57,26 @@ struct ExchangeRate: Codable, Identifiable {
     /// Actual decimal rate (backend stores as micro-rate × 1,000,000)
     var decimalRate: Double { Double(rate) / 1_000_000.0 }
 }
+
+// MARK: - Analytics Models
+
+/// Response item from get_monthly_trends FFI call
+struct MonthlyTrend: Codable, Identifiable {
+    let year: Int
+    let month: Int
+    let income: Int64
+    let expenses: Int64
+    let net: Int64
+    let transactionCount: Int
+
+    var id: String { "\(year)-\(month)" }
+}
+
+/// Response item from get_daily_spending FFI call
+struct DailySpending: Codable, Identifiable {
+    let date: String
+    let amount: Int64
+    let transactionCount: Int
+
+    var id: String { date }
+}

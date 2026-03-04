@@ -209,22 +209,11 @@ struct TransferView: View {
 
         Task.detached {
             do {
-                // Create expense from source
-                let _ = try FinanceBridge.createTransaction(
-                    accountId: fromId,
+                let _ = try FinanceBridge.createTransfer(
+                    fromAccountId: fromId,
+                    toAccountId: toId,
                     categoryId: transferCatId,
                     amount: cents,
-                    transactionType: "transfer",
-                    description: desc,
-                    date: dateStr
-                )
-
-                // Create income in destination
-                let _ = try FinanceBridge.createTransaction(
-                    accountId: toId,
-                    categoryId: transferCatId,
-                    amount: cents,
-                    transactionType: "transfer",
                     description: desc,
                     date: dateStr
                 )

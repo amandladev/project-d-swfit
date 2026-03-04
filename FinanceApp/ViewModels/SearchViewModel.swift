@@ -87,9 +87,9 @@ class SearchViewModel: ObservableObject {
 
         Task.detached {
             do {
-                let results = try FinanceBridge.searchTransactions(filterJson: json)
+                let page = try FinanceBridge.searchTransactions(filterJson: json)
                 await MainActor.run {
-                    self.results = results
+                    self.results = page.items
                     self.hasSearched = true
                     self.isLoading = false
                 }

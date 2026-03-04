@@ -122,6 +122,16 @@ final class FinanceBridge {
         try callVoid(delete_account(accountId))
     }
 
+    /// Get a single account by ID.
+    static func getAccount(accountId: String) throws -> Account {
+        try call(get_account(accountId))
+    }
+
+    /// Update an account's name and/or currency via JSON.
+    static func updateAccount(accountId: String, updateJson: String) throws -> Account {
+        try call(update_account(accountId, updateJson))
+    }
+
     // MARK: - Categories
 
     static func createCategory(userId: String, name: String, icon: String) throws -> FinanceCategory {
@@ -134,6 +144,16 @@ final class FinanceBridge {
 
     static func deleteCategory(categoryId: String) throws {
         try callVoid(delete_category(categoryId))
+    }
+
+    /// Get a single category by ID.
+    static func getCategory(categoryId: String) throws -> FinanceCategory {
+        try call(get_category(categoryId))
+    }
+
+    /// Update a category's name and/or icon via JSON.
+    static func updateCategory(categoryId: String, updateJson: String) throws -> FinanceCategory {
+        try call(update_category(categoryId, updateJson))
     }
 
     // MARK: - Transactions
@@ -168,16 +188,22 @@ final class FinanceBridge {
         try callVoid(delete_transaction(transactionId))
     }
 
-    static func listTransactions(accountId: String) throws -> [FinanceTransaction] {
-        try call(list_transactions(accountId))
+    static func listTransactions(
+        accountId: String,
+        limit: Int64 = 100,
+        offset: Int64 = 0
+    ) throws -> PaginatedResponse<FinanceTransaction> {
+        try call(list_transactions(accountId, limit, offset))
     }
 
     static func listTransactionsByDateRange(
         accountId: String,
         from: String,
-        to: String
-    ) throws -> [FinanceTransaction] {
-        try call(list_transactions_by_date_range(accountId, from, to))
+        to: String,
+        limit: Int64 = 100,
+        offset: Int64 = 0
+    ) throws -> PaginatedResponse<FinanceTransaction> {
+        try call(list_transactions_by_date_range(accountId, from, to, limit, offset))
     }
 
     // MARK: - Balance
@@ -222,12 +248,26 @@ final class FinanceBridge {
         )
     }
 
-    static func listRecurringTransactions(accountId: String) throws -> [RecurringTransaction] {
-        try call(list_recurring_transactions(accountId))
+    static func listRecurringTransactions(
+        accountId: String,
+        limit: Int64 = 100,
+        offset: Int64 = 0
+    ) throws -> PaginatedResponse<RecurringTransaction> {
+        try call(list_recurring_transactions(accountId, limit, offset))
     }
 
     static func deleteRecurringTransaction(id: String) throws {
         try callVoid(delete_recurring_transaction(id))
+    }
+
+    /// Get a single recurring transaction by ID.
+    static func getRecurringTransaction(id: String) throws -> RecurringTransaction {
+        try call(get_recurring_transaction(id))
+    }
+
+    /// Update a recurring transaction via JSON.
+    static func updateRecurringTransaction(id: String, updateJson: String) throws -> RecurringTransaction {
+        try call(update_recurring_transaction(id, updateJson))
     }
 
     static func processDueRecurringTransactions() throws -> [FinanceTransaction] {
@@ -255,6 +295,16 @@ final class FinanceBridge {
 
     static func deleteBudget(id: String) throws {
         try callVoid(delete_budget(id))
+    }
+
+    /// Get a single budget by ID.
+    static func getBudget(budgetId: String) throws -> Budget {
+        try call(get_budget(budgetId))
+    }
+
+    /// Update a budget via JSON.
+    static func updateBudget(budgetId: String, updateJson: String) throws -> Budget {
+        try call(update_budget(budgetId, updateJson))
     }
 
     static func getBudgetProgress(budgetId: String) throws -> BudgetProgress {
@@ -310,7 +360,7 @@ final class FinanceBridge {
     // MARK: - Search
 
     /// Search transactions with flexible filtering. Only account_id is required.
-    static func searchTransactions(filterJson: String) throws -> [FinanceTransaction] {
+    static func searchTransactions(filterJson: String) throws -> PaginatedResponse<FinanceTransaction> {
         try call(search_transactions(filterJson))
     }
 
@@ -351,9 +401,13 @@ final class FinanceBridge {
         try call(get_transaction_tags(transactionId))
     }
 
-    /// Get all transaction IDs that have a given tag.
-    static func getTransactionsByTag(tagId: String) throws -> [String] {
-        try call(get_transactions_by_tag(tagId))
+    /// Get paginated transaction IDs that have a given tag.
+    static func getTransactionsByTag(
+        tagId: String,
+        limit: Int64 = 100,
+        offset: Int64 = 0
+    ) throws -> PaginatedResponse<String> {
+        try call(get_transactions_by_tag(tagId, limit, offset))
     }
 
     // MARK: - Budget Progress (Batch)
@@ -361,5 +415,36 @@ final class FinanceBridge {
     /// Get progress for all budgets in an account at once.
     static func getAllBudgetsProgress(accountId: String) throws -> [BudgetProgress] {
         try call(get_all_budgets_progress(accountId))
+    }
+
+    // MARK: - Transfers
+
+    /// Create a transfer between two accounts (creates linked expense + income).
+    static func createTransfer(
+        fromAccountId: String,
+        toAccountId: String,
+        categoryId: String,
+        amount: Int64,
+        description: String,
+        date: String
+    ) throws -> [FinanceTransaction] {
+        try call(create_transfer(fromAccountId, toAccountId, categoryId, amount, description, date))
+    }
+
+    /// Get the linked transaction on the other side of a transfer.
+    static func getLinkedTransaction(transactionId: String) throws -> FinanceTransaction {
+        try call(get_linked_transaction(transactionId))
+    }
+
+    // MARK: - Analytics
+
+    /// Get monthly trends for an account (income, expenses, net per month).
+    static func getMonthlyTrends(accountId: String, from: String, to: String) throws -> [MonthlyTrend] {
+        try call(get_monthly_trends(accountId, from, to))
+    }
+
+    /// Get daily spending for an account within a date range.
+    static func getDailySpending(accountId: String, from: String, to: String) throws -> [DailySpending] {
+        try call(get_daily_spending(accountId, from, to))
     }
 }

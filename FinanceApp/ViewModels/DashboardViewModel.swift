@@ -98,8 +98,8 @@ class DashboardViewModel: ObservableObject {
                             }
                         }
                     }
-                    if let txns = try? FinanceBridge.listTransactions(accountId: account.id) {
-                        allTransactions.append(contentsOf: txns)
+                    if let page = try? FinanceBridge.listTransactions(accountId: account.id) {
+                        allTransactions.append(contentsOf: page.items)
                     }
 
                     // Use backend statistics for spending categories — convert to target currency

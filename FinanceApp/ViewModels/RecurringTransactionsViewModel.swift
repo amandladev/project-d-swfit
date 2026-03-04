@@ -19,9 +19,9 @@ class RecurringTransactionsViewModel: ObservableObject {
 
         Task.detached {
             do {
-                let items = try FinanceBridge.listRecurringTransactions(accountId: accountId)
+                let page = try FinanceBridge.listRecurringTransactions(accountId: accountId)
                 await MainActor.run {
-                    self.recurringTransactions = items
+                    self.recurringTransactions = page.items
                     self.isLoading = false
                 }
             } catch {
@@ -86,9 +86,9 @@ class RecurringTransactionsViewModel: ObservableObject {
             do {
                 let _ = try FinanceBridge.processDueRecurringTransactions()
                 let accountId = await self.accountId
-                let items = try FinanceBridge.listRecurringTransactions(accountId: accountId)
+                let page = try FinanceBridge.listRecurringTransactions(accountId: accountId)
                 await MainActor.run {
-                    self.recurringTransactions = items
+                    self.recurringTransactions = page.items
                 }
             } catch {
                 await MainActor.run {

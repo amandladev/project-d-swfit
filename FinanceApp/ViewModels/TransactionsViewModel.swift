@@ -4,6 +4,8 @@ import WidgetKit
 @MainActor
 class TransactionsViewModel: ObservableObject {
     @Published var transactions: [FinanceTransaction] = []
+    @Published var totalCount: Int = 0
+    @Published var hasMore: Bool = false
     @Published var balance: Int64 = 0
     @Published var isLoading = false
     @Published var error: String?
@@ -22,11 +24,13 @@ class TransactionsViewModel: ObservableObject {
 
         Task.detached { [accountId] in
             do {
-                let transactions = try FinanceBridge.listTransactions(accountId: accountId)
+                let page = try FinanceBridge.listTransactions(accountId: accountId)
                 let balance = try FinanceBridge.getBalance(accountId: accountId)
 
                 await MainActor.run {
-                    self.transactions = transactions
+                    self.transactions = page.items
+                    self.totalCount = page.totalCount
+                    self.hasMore = page.hasMore
                     self.balance = balance.balance
                     self.isLoading = false
                 }
@@ -135,7 +139,7 @@ class TransactionsViewModel: ObservableObject {
 
         Task.detached { [accountId] in
             do {
-                let transactions = try FinanceBridge.listTransactionsByDateRange(
+                let page = try FinanceBridge.listTransactionsByDateRange(
                     accountId: accountId,
                     from: DateUtils.toRFC3339(from),
                     to: DateUtils.toRFC3339(to)
@@ -143,7 +147,9 @@ class TransactionsViewModel: ObservableObject {
                 let balance = try FinanceBridge.getBalance(accountId: accountId)
 
                 await MainActor.run {
-                    self.transactions = transactions
+                    self.transactions = page.items
+                    self.totalCount = page.totalCount
+                    self.hasMore = page.hasMore
                     self.balance = balance.balance
                     self.isLoading = false
                 }
