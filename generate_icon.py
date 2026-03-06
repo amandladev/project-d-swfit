@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate a 1024x1024 app icon for the Finance app."""
+"""Generate a 1024x1024 app icon for the LedgerLock app."""
 
 from PIL import Image, ImageDraw, ImageFont
 import math, os

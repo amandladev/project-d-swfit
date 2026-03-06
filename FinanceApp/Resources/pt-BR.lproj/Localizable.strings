@@ -206,7 +206,7 @@
 "dateFilter.to" = "a";
 
 // MARK: - Onboarding
-"setup.appName" = "Finance App";
+"setup.appName" = "LedgerLock";
 "setup.tagline" = "Assuma o controle das suas finanças";
 "setup.yourName" = "Seu Nome";
 "setup.email" = "E-mail";

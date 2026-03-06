@@ -51,7 +51,7 @@ private struct LaunchView: View {
                 }
             }
 
-            Text("Finance App")
+            Text("LedgerLock")
                 .font(AppTheme.displayFont(24))
 
             ProgressView()
